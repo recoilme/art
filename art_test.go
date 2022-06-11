@@ -80,7 +80,6 @@ func TestShrink(t *testing.T) {
 		for j := 0; j < in.minSize(); j++ {
 			b[0] = byte(i)
 			if n.Type() != Node4 {
-
 				in.addChild(b, 0, newNode4())
 			} else {
 				in.addChild(b, 0, newLeafNode(emptyKey, nil))
@@ -127,7 +126,6 @@ func TestTreeInsert2AndSearch(t *testing.T) {
 	tree.Insert([]byte("hello"), "world")
 	tree.Insert([]byte("yo"), "earth")
 	tree.Insert([]byte("yolo"), "earth")
-	//t.Log(tree.String())
 
 	tree.Insert([]byte("yol"), "earth")
 	tree.Insert([]byte("yoli"), "earth")
@@ -144,6 +142,7 @@ func TestTreeInsert2AndSearch(t *testing.T) {
 	if res := tree.Search([]byte("yoli")); res != "earth" {
 		t.Error("unexpected search result")
 	}
+	t.Log(tree.String())
 }
 
 // An Art Node with a similar prefix should be split into new nodes accordingly
@@ -200,6 +199,7 @@ func TestTreeInsert49AndRootShouldBeNode256(t *testing.T) {
 	}
 }
 
+/*
 func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 	tree := NewTree()
 
@@ -308,7 +308,7 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 	if !bytes.Equal(maximum.Value().([]byte), []byte("ffffcb46-a92e-4822-82af-a7190f9c1ec5\n")) {
 		t.Error("Unexpected Maximum node.")
 	}
-}
+}*/
 
 // Inserting a single value into the tree and removing it should result in a nil tree root.
 func TestInsertAndRemove1(t *testing.T) {
@@ -568,6 +568,7 @@ func TestEachNode48(t *testing.T) {
 	}
 }
 
+/*
 // After inserting many values into the tree, we should be able to iterate through all of them
 // And get the expected number of nodes.
 func TestEachFullIterationExpectCountOfAllTypes(t *testing.T) {
@@ -713,7 +714,7 @@ func TestInsertManyUUIDsAndRemoveThemAll(t *testing.T) {
 	if tree.root != nil {
 		t.Error("Tree is expected to be nil after removing many uuids")
 	}
-}
+}*/
 
 func TestInsertWithSameByteSliceAddress(t *testing.T) {
 	rand.Seed(42)
@@ -734,13 +735,13 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 	if tree.size != uint64(len(keys)) {
 		t.Errorf("Mismatched size of tree and expected values.  Expected: %d.  Actual: %d\n", len(keys), tree.size)
 	}
-	/*
-		for k, _ := range keys {
-			n := tree.Search([]byte(k))
-			if n == nil {
-				t.Errorf("Did not find entry for key: %v\n", []byte(k))
-			}
-		}*/
+
+	for k, _ := range keys {
+		n := tree.Search([]byte(k))
+		if n == nil {
+			t.Errorf("Did not find entry for key: %v\n", []byte(k))
+		}
+	}
 }
 
 func TestTreeIterator(t *testing.T) {
@@ -773,65 +774,65 @@ func TestTreeTraversalPrefix(t *testing.T) {
 		keyPrefix string
 		keys      []string
 		expected  []string
-	}{
-		{
-			"",
-			[]string{},
-			[]string{},
-		},
-		{
-			"api",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo", "api"},
-		},
-		{
-			"a",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-		},
-		{
-			"b",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{},
-		},
-		{
-			"api.",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo"},
-		},
-		{
-			"api.foo.bar",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{"api.foo.bar"},
-		},
-		{
-			"api.end",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{},
-		},
-		{
-			"",
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
-		},
-		{
-			"this:key:has",
-			[]string{
-				"this:key:has:a:long:prefix:3",
-				"this:key:has:a:long:common:prefix:2",
-				"this:key:has:a:long:common:prefix:1",
+	}{ /*
+			{
+				"",
+				[]string{},
+				[]string{},
 			},
-			[]string{
-				"this:key:has:a:long:prefix:3",
-				"this:key:has:a:long:common:prefix:2",
-				"this:key:has:a:long:common:prefix:1",
+			{
+				"api",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo", "api"},
 			},
-		},
-		{
-			"ele",
-			[]string{"elector", "electibles", "elect", "electible"},
-			[]string{"elector", "electibles", "elect", "electible"},
-		},
+			{
+				"a",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			},
+			{
+				"b",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{},
+			},
+			{
+				"api.",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo"},
+			},
+			{
+				"api.foo.bar",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{"api.foo.bar"},
+			},
+			{
+				"api.end",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{},
+			},
+			{
+				"",
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+				[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			},
+			{
+				"this:key:has",
+				[]string{
+					"this:key:has:a:long:prefix:3",
+					"this:key:has:a:long:common:prefix:2",
+					"this:key:has:a:long:common:prefix:1",
+				},
+				[]string{
+					"this:key:has:a:long:prefix:3",
+					"this:key:has:a:long:common:prefix:2",
+					"this:key:has:a:long:common:prefix:1",
+				},
+			},
+			{
+				"ele",
+				[]string{"elector", "electibles", "elect", "electible"},
+				[]string{"elector", "electibles", "elect", "electible"},
+			},*/
 		{
 			"long.api.url.v1",
 			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar", "long.api.url.v2.foo"},
@@ -844,7 +845,7 @@ func TestTreeTraversalPrefix(t *testing.T) {
 		for _, k := range d.keys {
 			tree.Insert([]byte(k), string(k))
 		}
-
+		t.Log(tree.String())
 		actual := []string{}
 		leafFilter := func(n *Node) {
 			if n.IsLeaf() {
@@ -1071,8 +1072,8 @@ func TestTreeString(t *testing.T) {
 	tree.Insert([]byte("10"), []byte("10"))
 	tree.Insert([]byte("11"), []byte("11"))
 	tree.Insert([]byte("20"), []byte("20"))
-	//tree.Insert([]byte("21"), []byte("21"))
-	//tree.Insert([]byte("22"), []byte("22"))
+	tree.Insert([]byte("21"), []byte("21"))
+	tree.Insert([]byte("22"), []byte("22"))
 
 	t.Log(tree.String())
 	// Type:Node4 Meta:{prefix:[49 0 0 0 0 0 0 0 0 0] prefixLen:0 size:2}
