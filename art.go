@@ -307,8 +307,10 @@ func (n *innerNode) addChild(keys []byte, depth int, node *Node) {
 	var key byte
 	if len(keys) == depth {
 		key = 0
+		node.leaf.key=keys[depth:]
 	} else {
 		key = keys[depth]
+		node.leaf.key=keys[depth+1:]
 	}
 	if n.isFull() {
 		n.grow()
@@ -710,7 +712,96 @@ func (t *Tree) Insert(key []byte, value interface{}) bool {
 	return updated
 }
 
+
 func (t *Tree) insert(currentRef **Node, key []byte, value interface{}, depth int) bool {
+	fmt.Println("insert:",key,string(key))
+	current := *currentRef
+	if current == nil {
+		replaceNodeRef(currentRef, newLeafNode(key, value))
+		return false
+	}
+
+	if current.IsLeaf() {
+		if current.leaf.IsMatch(key) {
+			current.leaf.value = value
+			return true
+		}
+		currentLeaf := current.leaf
+		newLeaf := newLeafNode(key, value)
+		limit := currentLeaf.prefixMatchIndex(newLeaf.leaf, depth)
+
+		n4 := newNode4()
+		n4in := n4.innerNode
+		n4in.prefixSet(key[depth:], min(limit, MaxPrefixLen))
+
+		depth += n4in.prefixLen()
+		//fmt.Println("current.leaf.key",current.leaf.key,current.leaf.key[depth+1:])
+		//current.leaf.key=current.leaf.key[depth:]
+		n4in.addChild(currentLeaf.key, depth, current)
+		//n4in.addChild(key, depth, newLeaf)
+		replaceNodeRef(currentRef, n4)
+		//fmt.Println("current.leaf.key",current.leaf.key)
+		return t.insert(&n4, key, value, depth)
+	}
+	//return false
+
+	in := current.innerNode
+	if bytes.HasPrefix(key,in.prefix) {
+		next := in.findChild(key, depth)
+		fmt.Println(key[depth+1:],next,in)
+	}
+	/*
+	if in.prefixLen() != 0 {
+		mIsmatch := current.prefixMatchIndex(key, depth)
+		fmt.Println("mIsmatch",mIsmatch,in.prefix)
+		
+		if mIsmatch != in.prefixLen() {
+			n4 := newNode4()
+			n4in := n4.innerNode
+			replaceNodeRef(currentRef, n4)
+			//n4in.prefixLen = mIsmatch
+
+			//copyBytes(n4in.prefix, in.prefix, mIsmatch)
+			n4in.prefixSet(in.prefix, mIsmatch)
+
+			if in.prefixLen() < MaxPrefixLen {
+				n4in.addChild(in.prefix, mIsmatch, current)
+				//in.prefixLen -= (mIsmatch + 1)
+				//copyBytes(in.prefix, in.prefix[mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+				n4in.prefixSet(in.prefix[mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+				mIsmatch -= (mIsmatch + 1)
+			} else {
+				//in.prefixLen -= (mIsmatch + 1)
+				minKey := current.minimum().leaf.key
+				n4in.addChild(minKey, (depth + mIsmatch), current)
+				//fmt.Println("here",minKey[depth+mIsmatch+1:],min(in.prefixLen()-(mIsmatch + 1), MaxPrefixLen))
+				//copyBytes(in.prefix, minKey[depth+mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+				in.prefixSet(minKey[depth+mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+				mIsmatch -= (mIsmatch + 1)
+			}
+
+			newLeafNode := newLeafNode(key, value)
+			n4in.addChild(key, (depth + mIsmatch), newLeafNode)
+
+			return false
+		}
+		depth += mIsmatch //in.prefixLen()
+		*/
+	//}
+/*
+	next := in.findChild(key, depth)
+	if next != nil {
+		return t.insert(next, key, value, depth+1)
+	}
+
+	in.addChild(key, depth, newLeafNode(key, value))
+	*/
+	return false
+}
+
+/*
+func (t *Tree) insert(currentRef **Node, key []byte, value interface{}, depth int) bool {
+	fmt.Println("insert:",key,string(key))
 	current := *currentRef
 	if current == nil {
 		replaceNodeRef(currentRef, newLeafNode(key, value))
@@ -782,7 +873,7 @@ func (t *Tree) insert(currentRef **Node, key []byte, value interface{}, depth in
 
 	in.addChild(key, depth, newLeafNode(key, value))
 	return false
-}
+}*/
 
 func (t *Tree) Delete(key []byte) bool {
 	if t.root == nil {
@@ -870,7 +961,7 @@ func (t *Tree) scan(current *Node, key []byte, callback Callback) {
 	depth := 0
 	for current != nil {
 		if current.IsLeaf() {
-			if current.leaf.isPrefixMatch(key[:len(key)-1]) {
+			if current.leaf.isPrefixMatch(key) {
 				callback(current)
 			}
 			break
@@ -1013,9 +1104,9 @@ func (tree *Tree) String() string {
 		//buf.WriteString(fmt.Sprintf("\nRoot:\n\tSize:%d\n\tInner:%v\n\tLeaf:%v\n\n", tree.size, tree.root.innerNode, tree.root.leaf))
 	}
 	tree.Each(func(node *Node) {
-		if !node.IsLeaf() {
+		//if !node.IsLeaf() {
 			buf.WriteString(node.String(0, visited))
-		}
+		//}
 	})
 	return buf.String()
 }
