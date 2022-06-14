@@ -834,7 +834,7 @@ func TestTreeTraversalPrefix(t *testing.T) {
 			},*/
 		{
 			"long.api.url.v1",
-			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar"},// "long.api.url.v2.foo"},
+			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar"}, // "long.api.url.v2.foo"},
 			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar"},
 		},
 	}
@@ -846,18 +846,18 @@ func TestTreeTraversalPrefix(t *testing.T) {
 		}
 		t.Log(tree.String())
 		/*
-		actual := []string{}
-		leafFilter := func(n *Node) {
-			if n.IsLeaf() {
-				actual = append(actual, string(n.Key()))
+			actual := []string{}
+			leafFilter := func(n *Node) {
+				if n.IsLeaf() {
+					actual = append(actual, string(n.Key()))
+				}
 			}
-		}
-		tree.Scan([]byte(d.keyPrefix), leafFilter)
+			tree.Scan([]byte(d.keyPrefix), leafFilter)
 
-		sort.Strings(d.expected)
-		sort.Strings(actual)
-		assert.Equal(t, len(d.expected), len(actual))
-		assert.Equal(t, d.expected, actual, d.keyPrefix)
+			sort.Strings(d.expected)
+			sort.Strings(actual)
+			assert.Equal(t, len(d.expected), len(actual))
+			assert.Equal(t, d.expected, actual, d.keyPrefix)
 		*/
 	}
 }
@@ -1085,4 +1085,232 @@ func TestTreeString(t *testing.T) {
 		}
 	})
 
+}
+
+func (t *Tree) InsertNew(key []byte, value interface{}) bool {
+	updated := t.insertNew(&t.root, key, value, 0)
+	if !updated {
+		t.size++
+	}
+	return updated
+}
+func TestTreeBase(t *testing.T) {
+	tree := NewTree()
+	ins := func(k string) {
+		tree.InsertNew([]byte(k), []byte(k))
+	}
+	//"long.api.url.v1.foo", "long.api.url.v1.bar"
+	ins("long.api.url.v1.foo")
+	if tree.root.Type() != Leaf {
+		t.Error("Unexpected node type for root after a single insert.")
+	}
+	ins("long.api.url.v1.bar")
+	//ins("21")
+	t.Log("\n", tree.String())
+}
+
+func commonPrefix(key, newKey []byte) int {
+	i := 0
+	limit := min(len(key), len(newKey))
+	for ; i < limit; i++ {
+		if key[i] != newKey[i] {
+			return i
+		}
+	}
+	return i
+}
+
+func (t *Tree) insertNew(currentRef **Node, key []byte, value interface{}, depth int) bool {
+	current := *currentRef
+	fmt.Println("insert:", key, string(key))
+	// empty tree
+	if current == nil {
+		fmt.Println("empty")
+		replaceNodeRef(currentRef, newLeafNode(key, value))
+		return false
+	}
+
+	if current.IsLeaf() {
+		fmt.Println("leaf")
+		if current.leaf.IsMatch(key) {
+			current.leaf.value = value
+			return true
+		}
+		//currentLeaf := current.leaf
+		limit := commonPrefix(current.leaf.key, key[depth:])
+		//fmt.Println("limit",limit, current.leaf.key)
+		n4 := newNode4()
+		n4in := n4.innerNode
+		n4in.prefixSet(key[depth:], min(limit, MaxPrefixLen))
+		depth += n4in.prefixLen()
+		fmt.Println(key, key[depth:], n4in.prefixLen())
+		n4in.addChild(key[:], n4in.prefixLen(), current)
+		//n4in.addChild(key, depth, newLeafNode(key[depth:],value))
+		replaceNodeRef(currentRef, n4)
+		//fmt.Println(n4in)
+		return t.insertNew(&n4, key, value, depth)
+	}
+	//return false
+	fmt.Println("inner")
+	in := current.innerNode
+	//	if bytes.HasPrefix(key, in.prefix) {
+
+	next := in.findChild(key, depth)
+	if next == nil {
+		newLeafNode := newLeafNode(key, value)
+		in.addChild(key, (depth), newLeafNode)
+		return false
+	}
+	isl := *next
+	fmt.Println("found", isl.IsLeaf())
+	depth++
+	return t.insertNew(next, key, value, depth)
+	//n4 := newNode4()
+	//n4in := n4.innerNode
+	//replaceNodeRef(currentRef, n4)
+	//n4in.prefixLen = mIsmatch
+
+	//copyBytes(n4in.prefix, in.prefix, mIsmatch)
+	//n4in.prefixSet(in.prefix, mIsmatch)
+	//}
+	/*
+		if in.prefixLen() != 0 {
+			mIsmatch := current.prefixMatchIndex(key, depth)
+			fmt.Println("mIsmatch",mIsmatch,in.prefix)
+
+			if mIsmatch != in.prefixLen() {
+				n4 := newNode4()
+				n4in := n4.innerNode
+				replaceNodeRef(currentRef, n4)
+				//n4in.prefixLen = mIsmatch
+
+				//copyBytes(n4in.prefix, in.prefix, mIsmatch)
+				n4in.prefixSet(in.prefix, mIsmatch)
+
+				if in.prefixLen() < MaxPrefixLen {
+					n4in.addChild(in.prefix, mIsmatch, current)
+					//in.prefixLen -= (mIsmatch + 1)
+					//copyBytes(in.prefix, in.prefix[mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+					n4in.prefixSet(in.prefix[mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+					mIsmatch -= (mIsmatch + 1)
+				} else {
+					//in.prefixLen -= (mIsmatch + 1)
+					minKey := current.minimum().leaf.key
+					n4in.addChild(minKey, (depth + mIsmatch), current)
+					//fmt.Println("here",minKey[depth+mIsmatch+1:],min(in.prefixLen()-(mIsmatch + 1), MaxPrefixLen))
+					//copyBytes(in.prefix, minKey[depth+mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+					in.prefixSet(minKey[depth+mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+					mIsmatch -= (mIsmatch + 1)
+				}
+
+				newLeafNode := newLeafNode(key, value)
+				n4in.addChild(key, (depth + mIsmatch), newLeafNode)
+
+				return false
+			}
+			depth += mIsmatch //in.prefixLen()
+	*/
+	//}
+	/*
+		next := in.findChild(key, depth)
+		if next != nil {
+			return t.insert(next, key, value, depth+1)
+		}
+
+		in.addChild(key, depth, newLeafNode(key, value))
+	*/
+	return false
+}
+
+type (
+	Tr struct {
+		root *Nod
+	}
+
+	Nod struct {
+		key   []byte
+		val   []byte
+		idx   []byte
+		child []*Tr
+	}
+)
+
+func NewTr() *Tr {
+	return &Tr{
+		root: nil,
+	}
+}
+
+func NewNod(key, val []byte, size byte) *Nod {
+	var newKey, newVal []byte
+	if key != nil {
+		newKey = make([]byte, len(key))
+		copy(newKey, key)
+	}
+
+	if val != nil {
+		newVal = make([]byte, len(val))
+		copy(newVal, val)
+	}
+
+	return &Nod{
+		key:   newKey,
+		val:   newVal,
+		idx:   make([]byte, 0, size),
+		child: make([]*Tr, 0, size),
+	}
+}
+
+func (t *Tr) Ins(key, val []byte) bool {
+	return t.ins(&t.root, key, val, 0)
+}
+
+func (t *Tr) ins(currentRef **Nod, key, val []byte, depth int) bool {
+	fmt.Println("Ins", key)
+	node := t.search(t.root,key, 0)
+	if node == nil {
+		fmt.Println("nil", key)
+		*currentRef = NewNod(key, val, 16)
+		return false
+	}
+	return false
+}
+
+func TestTr0(t *testing.T) {
+	tree := NewTr()
+	assert.NotNil(t, tree)
+	ins := func(k string) {
+		tree.Ins([]byte(k), []byte(k))
+	}
+	ins("1")
+	val := tree.Search([]byte("1"))
+	assert.Equal(t, "1", string(val))
+	ins("2")
+	//fmt.Println(tree.root)
+	val = tree.Search([]byte("1"))
+	assert.Equal(t, "1", string(val))
+	//fmt.Println(tree.root)
+}
+
+func (t *Tr) Search(key []byte) []byte {
+	res := t.search(t.root, key, 0)
+	if res == nil {
+		return nil
+	}
+	return res.val
+}
+
+func (t *Tr) search(current *Nod, key []byte, depth int) *Nod {
+	fmt.Println("search", key)
+	for current != nil {
+		if len(current.child) == 0 {
+
+			if bytes.Equal(key, current.key) {
+				fmt.Println("Equal")
+				return current
+			}
+			return nil
+		}
+	}
+	return nil
 }

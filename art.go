@@ -282,7 +282,7 @@ func (n *innerNode) findChild(keys []byte, depth int) **Node {
 	if n == nil {
 		return nil
 	}
-
+	fmt.Println("findChild:", key)
 	index := n.index(key)
 
 	switch n.nodeType {
@@ -307,10 +307,10 @@ func (n *innerNode) addChild(keys []byte, depth int, node *Node) {
 	var key byte
 	if len(keys) == depth {
 		key = 0
-		node.leaf.key=keys[depth:]
+		node.leaf.key = keys[depth:]
 	} else {
 		key = keys[depth]
-		node.leaf.key=keys[depth+1:]
+		node.leaf.key = keys[depth+1:]
 	}
 	if n.isFull() {
 		n.grow()
@@ -712,9 +712,8 @@ func (t *Tree) Insert(key []byte, value interface{}) bool {
 	return updated
 }
 
-
 func (t *Tree) insert(currentRef **Node, key []byte, value interface{}, depth int) bool {
-	fmt.Println("insert:",key,string(key))
+	fmt.Println("insert:", key, string(key))
 	current := *currentRef
 	if current == nil {
 		replaceNodeRef(currentRef, newLeafNode(key, value))
@@ -746,55 +745,55 @@ func (t *Tree) insert(currentRef **Node, key []byte, value interface{}, depth in
 	//return false
 
 	in := current.innerNode
-	if bytes.HasPrefix(key,in.prefix) {
+	if bytes.HasPrefix(key, in.prefix) {
 		next := in.findChild(key, depth)
-		fmt.Println(key[depth+1:],next,in)
+		fmt.Println(key[depth+1:], next, in)
 	}
 	/*
-	if in.prefixLen() != 0 {
-		mIsmatch := current.prefixMatchIndex(key, depth)
-		fmt.Println("mIsmatch",mIsmatch,in.prefix)
-		
-		if mIsmatch != in.prefixLen() {
-			n4 := newNode4()
-			n4in := n4.innerNode
-			replaceNodeRef(currentRef, n4)
-			//n4in.prefixLen = mIsmatch
+		if in.prefixLen() != 0 {
+			mIsmatch := current.prefixMatchIndex(key, depth)
+			fmt.Println("mIsmatch",mIsmatch,in.prefix)
 
-			//copyBytes(n4in.prefix, in.prefix, mIsmatch)
-			n4in.prefixSet(in.prefix, mIsmatch)
+			if mIsmatch != in.prefixLen() {
+				n4 := newNode4()
+				n4in := n4.innerNode
+				replaceNodeRef(currentRef, n4)
+				//n4in.prefixLen = mIsmatch
 
-			if in.prefixLen() < MaxPrefixLen {
-				n4in.addChild(in.prefix, mIsmatch, current)
-				//in.prefixLen -= (mIsmatch + 1)
-				//copyBytes(in.prefix, in.prefix[mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
-				n4in.prefixSet(in.prefix[mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
-				mIsmatch -= (mIsmatch + 1)
-			} else {
-				//in.prefixLen -= (mIsmatch + 1)
-				minKey := current.minimum().leaf.key
-				n4in.addChild(minKey, (depth + mIsmatch), current)
-				//fmt.Println("here",minKey[depth+mIsmatch+1:],min(in.prefixLen()-(mIsmatch + 1), MaxPrefixLen))
-				//copyBytes(in.prefix, minKey[depth+mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
-				in.prefixSet(minKey[depth+mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
-				mIsmatch -= (mIsmatch + 1)
+				//copyBytes(n4in.prefix, in.prefix, mIsmatch)
+				n4in.prefixSet(in.prefix, mIsmatch)
+
+				if in.prefixLen() < MaxPrefixLen {
+					n4in.addChild(in.prefix, mIsmatch, current)
+					//in.prefixLen -= (mIsmatch + 1)
+					//copyBytes(in.prefix, in.prefix[mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+					n4in.prefixSet(in.prefix[mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+					mIsmatch -= (mIsmatch + 1)
+				} else {
+					//in.prefixLen -= (mIsmatch + 1)
+					minKey := current.minimum().leaf.key
+					n4in.addChild(minKey, (depth + mIsmatch), current)
+					//fmt.Println("here",minKey[depth+mIsmatch+1:],min(in.prefixLen()-(mIsmatch + 1), MaxPrefixLen))
+					//copyBytes(in.prefix, minKey[depth+mIsmatch+1:], min(in.prefixLen(), MaxPrefixLen))
+					in.prefixSet(minKey[depth+mIsmatch+1:], min(in.prefixLen()-(mIsmatch+1), MaxPrefixLen))
+					mIsmatch -= (mIsmatch + 1)
+				}
+
+				newLeafNode := newLeafNode(key, value)
+				n4in.addChild(key, (depth + mIsmatch), newLeafNode)
+
+				return false
 			}
-
-			newLeafNode := newLeafNode(key, value)
-			n4in.addChild(key, (depth + mIsmatch), newLeafNode)
-
-			return false
-		}
-		depth += mIsmatch //in.prefixLen()
-		*/
+			depth += mIsmatch //in.prefixLen()
+	*/
 	//}
-/*
-	next := in.findChild(key, depth)
-	if next != nil {
-		return t.insert(next, key, value, depth+1)
-	}
+	/*
+		next := in.findChild(key, depth)
+		if next != nil {
+			return t.insert(next, key, value, depth+1)
+		}
 
-	in.addChild(key, depth, newLeafNode(key, value))
+		in.addChild(key, depth, newLeafNode(key, value))
 	*/
 	return false
 }
@@ -1105,7 +1104,7 @@ func (tree *Tree) String() string {
 	}
 	tree.Each(func(node *Node) {
 		//if !node.IsLeaf() {
-			buf.WriteString(node.String(0, visited))
+		buf.WriteString(node.String(0, visited))
 		//}
 	})
 	return buf.String()
@@ -1121,7 +1120,7 @@ func (n *Node) String(depth int, visited map[string]bool) string {
 	}
 	var buf bytes.Buffer
 	if n.IsLeaf() {
-		return fmt.Sprintf("Key:%v Val:%v\n", n.Key(), n.Value())
+		return fmt.Sprintf("Key:%v Val:%v\n\n", n.Key(), n.Value())
 	}
 	buf.WriteString(fmt.Sprintf("Type:%s Meta:%+v PrefixLen:%d PrefixStr:%s Keys:%v\n", n.TypeString(), n.innerNode.meta, n.innerNode.prefixLen(), n.innerNode.prefix, n.innerNode.keys))
 	if n.innerNode.meta.size > 0 {
