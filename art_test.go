@@ -2,7 +2,6 @@ package art_test
 
 import (
 	"encoding/binary"
-	"fmt"
 	"testing"
 
 	"github.com/recoilme/art"
@@ -48,10 +47,11 @@ func Test3(t *testing.T) {
 	if replaced {
 		t.Fatal("expected false")
 	}
-	art.Set(item3, item3)
+	replaced = art.Set(item3, item3)
 	if replaced {
 		t.Fatal("expected false")
 	}
+	//art.Print()
 }
 
 func BenchmarkSet(b *testing.B) {
@@ -66,14 +66,14 @@ func BenchmarkSet(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	tree := art.New()
-	for n := b.N - 1; n >= 0; n-- {
-		tree.Set(strs[n], strs[n])
+	for n := b.N - 1; n > 0; n-- {
+		tree.Set(strs[n], nil)
 	}
-	fmt.Println(fmt.Sprintf("%+v", tree))
+	//fmt.Println(fmt.Sprintf("%+v", tree))
 }
 
 func Test4(t *testing.T) {
-	N := 3
+	N := 258
 	strs := make([][]byte, N)
 
 	for n := 0; n < N; n++ {
@@ -84,12 +84,14 @@ func Test4(t *testing.T) {
 
 	tree := art.New()
 	for n := N - 1; n >= 0; n-- {
-		tree.Set(strs[n], strs[n])
+		//tree.Set(strs[n], strs[n])
 
-		if n == 3 {
+		if n == 0 {
 			tree.Set(strs[n], strs[n])
-			break //fmt.Println(fmt.Sprintf("%+v", tree))
+			//break //fmt.Println(fmt.Sprintf("%+v", tree))
+
 		}
+		tree.Set(strs[n], strs[n])
 	}
-	fmt.Println(fmt.Sprintf("%+v", tree))
+	tree.Print()
 }
