@@ -1,6 +1,7 @@
 package art_test
 
 import (
+	"bytes"
 	"encoding/binary"
 	"testing"
 
@@ -54,24 +55,6 @@ func Test3(t *testing.T) {
 	//art.Print()
 }
 
-func BenchmarkSet(b *testing.B) {
-	strs := make([][]byte, b.N)
-
-	for n := 0; n < b.N; n++ {
-		bin := make([]byte, 8)
-		binary.BigEndian.PutUint64(bin, uint64(n))
-		strs[n] = bin
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-	tree := art.New()
-	for n := b.N - 1; n > 0; n-- {
-		tree.Set(strs[n], nil)
-	}
-	//fmt.Println(fmt.Sprintf("%+v", tree))
-}
-
 func Test4(t *testing.T) {
 	N := 258
 	strs := make([][]byte, N)
@@ -84,14 +67,32 @@ func Test4(t *testing.T) {
 
 	tree := art.New()
 	for n := N - 1; n >= 0; n-- {
-		//tree.Set(strs[n], strs[n])
-
 		if n == 0 {
 			tree.Set(strs[n], strs[n])
-			//break //fmt.Println(fmt.Sprintf("%+v", tree))
-
 		}
 		tree.Set(strs[n], strs[n])
 	}
 	tree.Print()
+}
+
+func Test5(t *testing.T) {
+	N := 233527
+	strs := make([][]byte, N)
+
+	for n := 0; n < N; n++ {
+		bin := make([]byte, 8)
+		binary.BigEndian.PutUint64(bin, uint64(n))
+		strs[n] = bin
+	}
+
+	tree := art.New()
+	for n := 0; n < N; n++ {
+		tree.Set(strs[n], strs[n])
+	}
+	for n := 0; n < N; n++ {
+		val := tree.Get(strs[n])
+		if !bytes.Equal(strs[n], val) {
+			t.Fail()
+		}
+	}
 }
