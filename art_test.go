@@ -56,7 +56,7 @@ func Test3(t *testing.T) {
 }
 
 func Test4(t *testing.T) {
-	N := 258
+	N := 5
 	strs := make([][]byte, N)
 
 	for n := 0; n < N; n++ {
@@ -72,7 +72,7 @@ func Test4(t *testing.T) {
 		}
 		tree.Set(strs[n], strs[n])
 	}
-	tree.Print()
+	t.Log(tree.String())
 }
 
 func Test5(t *testing.T) {

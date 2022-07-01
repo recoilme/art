@@ -35,6 +35,6 @@ func (a *Art) Get(key []byte) (val []byte) {
 	return a.root.get(key, 0)
 }
 
-func (a *Art) Print() {
-	a.root.Print(0)
+func (a *Art) String() string {
+	return a.root.String(0)
 }

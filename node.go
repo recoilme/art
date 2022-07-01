@@ -2,9 +2,7 @@ package art
 
 import (
 	"bytes"
-	"fmt"
 	"math/bits"
-	"strings"
 )
 
 func (n *node) set(key, val []byte, depth int) (replaced bool) {
@@ -220,12 +218,4 @@ func (n *node) nodeSplit(key, val []byte) {
 	n.key = cp
 	n.val = nil
 	n.add(key[depth:], val)
-}
-
-func (n *node) Print(depth int) {
-	fmt.Print(fmt.Sprintf("%s %+v\n", strings.Repeat(" ", depth), n))
-	depth++
-	for idx := 0; idx < int(n.size); idx++ {
-		n.children[idx].Print(depth)
-	}
 }
