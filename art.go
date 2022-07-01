@@ -16,7 +16,7 @@ func New() *Art {
 }
 
 func (a *Art) Set(key, val []byte) (replaced bool) {
-	//fmt.Println("set", key)
+	//fmt.Println("Set", key)
 	if a.root == nil {
 		a.root = &node{
 			key: key,

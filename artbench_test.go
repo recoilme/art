@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"testing"
-	"time"
 
 	"github.com/recoilme/art"
 )
@@ -31,7 +30,7 @@ func BenchmarkGet(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		bin := make([]byte, 8)
-		binary.BigEndian.PutUint64(bin, uint64(time.Now().UnixNano()))
+		binary.BigEndian.PutUint64(bin, uint64(n))
 		strs[n] = bin
 	}
 

@@ -76,7 +76,7 @@ func Test4(t *testing.T) {
 }
 
 func Test5(t *testing.T) {
-	N := 233527
+	N := 23
 	strs := make([][]byte, N)
 
 	for n := 0; n < N; n++ {

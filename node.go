@@ -149,7 +149,6 @@ func (n *node) grow() {
 
 func (n *node) add(key, val []byte) {
 	//	fmt.Println("add", key, n.size)
-	// grow
 	n.grow()
 	var idx int16
 	for ; idx < n.size; idx++ {
@@ -168,20 +167,6 @@ func (n *node) add(key, val []byte) {
 		val: val,
 	}
 	n.size += 1
-	/*
-		var j int16
-		for j = n.size; j > index; j-- {
-			//if n.children[i-1].key[0] > key[0] {
-				n.children[j] = n.children[j-1]
-			//}
-		}
-
-		n.children[index] = &node{
-			key: key,
-			val: val,
-		}
-
-		n.size++*/
 }
 
 func (n *node) find(k byte) (index int16) {
