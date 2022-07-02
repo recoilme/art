@@ -5,6 +5,13 @@ import (
 	"math/bits"
 )
 
+type node struct {
+	key      []byte
+	val      []byte
+	children []*node
+	size     int16
+}
+
 func (n *node) set(key, val []byte, depth int) (replaced bool) {
 	// leaf node
 	if n.size == 0 {
@@ -208,6 +215,20 @@ func (n *node) nodeSplit(key, val []byte) {
 	depth := len(cp)
 	// add childs
 	n.children = make([]*node, 4)
+	if bytes.Equal(n.key, cp) {
+		// old key = cp
+		n.add(key[depth:], val)
+		return
+	}
+	if bytes.Equal(key, cp) {
+		// new key = cp
+		oldkey := n.key
+		oldval := n.val
+		n.key = cp
+		n.val = val
+		n.add(oldkey[depth:], oldval)
+		return
+	}
 	// save old vals
 	n.children[0] = &node{
 		key: n.key[depth:],

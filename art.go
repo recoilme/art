@@ -4,13 +4,6 @@ type Art struct {
 	root *node
 }
 
-type node struct {
-	key      []byte
-	val      []byte
-	children []*node
-	size     int16
-}
-
 func New() *Art {
 	return &Art{}
 }
@@ -36,5 +29,8 @@ func (a *Art) Get(key []byte) (val []byte) {
 }
 
 func (a *Art) String() string {
+	if a.root == nil {
+		return ""
+	}
 	return a.root.String(0)
 }

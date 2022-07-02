@@ -96,3 +96,30 @@ func Test5(t *testing.T) {
 		}
 	}
 }
+
+func TestTreeInsert2AndSearch(t *testing.T) {
+	tree := art.New()
+
+	earth := []byte("earth")
+
+	tree.Set([]byte("hello"), []byte("world"))
+	tree.Set([]byte("yo"), earth)
+	tree.Set([]byte("yolo"), earth)
+	tree.Set([]byte("yol"), earth)
+	tree.Set([]byte("yoli"), earth)
+	tree.Set([]byte("yopo"), earth)
+	t.Log(tree.String())
+	/*
+		if res := tree.Search([]byte("yo")); res != "earth" {
+			t.Error("unexpected search result")
+		}
+
+		if res := tree.Search([]byte("yolo")); res != "earth" {
+			t.Error("unexpected search result")
+		}
+
+		if res := tree.Search([]byte("yoli")); res != "earth" {
+			t.Error("unexpected search result")
+		}
+	*/
+}

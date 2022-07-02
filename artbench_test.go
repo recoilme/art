@@ -56,19 +56,3 @@ func BenchmarkGet(b *testing.B) {
 		}
 	}
 }
-
-func BenchmarkArt4Get(b *testing.B) {
-	strs := initBin(b.N)
-
-	tree := art.New()
-	for n := 0; n < b.N; n++ {
-		tree.Set(strs[n], nil)
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-	for n := 0; n < b.N; n++ {
-		_ = tree.Get(strs[n])
-
-	}
-}
