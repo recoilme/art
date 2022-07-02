@@ -121,7 +121,6 @@ func TestTreeInsert2AndSearch(t *testing.T) {
 	if res := tree.Get([]byte("yoli")); !bytes.Equal(res, earth) {
 		t.Error("unexpected search result")
 	}
-
 }
 
 func TestStringKeys(t *testing.T) {
