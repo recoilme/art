@@ -34,3 +34,10 @@ func (a *Art) String() string {
 	}
 	return a.root.String(0)
 }
+
+func (a *Art) StringKeys(isString bool) string {
+	if a.root == nil {
+		return ""
+	}
+	return "\n" + a.root.StringKeys(0, isString)
+}

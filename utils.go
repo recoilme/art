@@ -33,3 +33,17 @@ func (n *node) String(depth int) string {
 	}
 	return buf.String()
 }
+
+func (n *node) StringKeys(depth int, isString bool) string {
+	buf := bytes.Buffer{}
+	if isString {
+		buf.WriteString(fmt.Sprintf("%s%s:%s\n", strings.Repeat(" ", depth), n.key, n.val))
+	} else {
+		buf.WriteString(fmt.Sprintf("%s%v:%v\n", strings.Repeat(" ", depth), n.key, n.val))
+	}
+	depth++
+	for idx := 0; idx < int(n.size); idx++ {
+		buf.WriteString(n.children[idx].StringKeys(depth, isString))
+	}
+	return buf.String()
+}

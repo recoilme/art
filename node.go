@@ -175,6 +175,7 @@ func (n *node) add(key, val []byte) {
 }
 
 func (n *node) find(k byte) (index int16) {
+	// TODO 255
 	switch len(n.children) {
 	case -1:
 		// never 16

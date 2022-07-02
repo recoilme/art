@@ -108,18 +108,28 @@ func TestTreeInsert2AndSearch(t *testing.T) {
 	tree.Set([]byte("yol"), earth)
 	tree.Set([]byte("yoli"), earth)
 	tree.Set([]byte("yopo"), earth)
-	t.Log(tree.String())
-	/*
-		if res := tree.Search([]byte("yo")); res != "earth" {
-			t.Error("unexpected search result")
-		}
+	t.Log(tree.StringKeys(true))
 
-		if res := tree.Search([]byte("yolo")); res != "earth" {
-			t.Error("unexpected search result")
-		}
+	if res := tree.Get([]byte("yo")); !bytes.Equal(res, earth) {
+		t.Error("unexpected search result")
+	}
 
-		if res := tree.Search([]byte("yoli")); res != "earth" {
-			t.Error("unexpected search result")
-		}
-	*/
+	if res := tree.Get([]byte("yolo")); !bytes.Equal(res, earth) {
+		t.Error("unexpected search result")
+	}
+
+	if res := tree.Get([]byte("yoli")); !bytes.Equal(res, earth) {
+		t.Error("unexpected search result")
+	}
+
+}
+
+func TestStringKeys(t *testing.T) {
+	tree := art.New()
+
+	tree.Set([]byte("http://example.com/tag/10"), []byte("a"))
+	tree.Set([]byte("http://example.com/tag/20"), []byte("b"))
+	tree.Set([]byte("http://some.com"), []byte("c"))
+
+	t.Log(tree.StringKeys(true))
 }
