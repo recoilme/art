@@ -1,7 +1,7 @@
 # Art 
 Adaptive Radix Tree done right
 
-## simple & perfomant adaptive radix tree implementation
+## Simple & perfomant adaptive radix tree implementation
 
 ### Description
 Unlike other implementations in Go/C this version store only different parts of keys. Which leads to dramatically reducing of memory usage in case of storing keys with repeatable fragments
@@ -13,12 +13,13 @@ Unlike other implementations in Go/C this version store only different parts of 
  - Perfomant
  - Store the data in sorted order
 
-### Disadvantages:
+### Disadvantages
  
  - Binary comparator only
 
 
-## Status: WIP
+## Status
+WIP
 
 ## Storage format
 In this example:
