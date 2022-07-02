@@ -4,18 +4,18 @@ Adaptive Radix Tree done right
 ## simple & perfomant adaptive radix tree implementation
 
 ### Description
-Unlike other implementations in Go/C this version store only differents parts of keys. Which leads to dramatically reducing of memory usage in case of storing keys with repeatable fragments
+Unlike other implementations in Go/C this version store only different parts of keys. Which leads to dramatically reducing of memory usage in case of storing keys with repeatable fragments
 
 ### Advantages
 
- - Optimize memory usage, correct implementation of compact/prefix tree
- - Minimum allocations on Set/Get (GC friendly)
+ - Optimized memory usage, correct implementation of compact/prefix tree
+ - Minimized allocations on Set/Get (GC friendly)
  - Perfomant
- - Maintains the data in sorted order, which enables additional operations like range scan and prefix lookup
+ - Store the data in sorted order
 
 ### Disadvantages:
  
- - Binary comparator
+ - Binary comparator only
 
 
 ## Status: WIP
