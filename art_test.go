@@ -11,7 +11,7 @@ import (
 func Test1(t *testing.T) {
 	art := art.New()
 	item := []byte("1")
-	replaced := art.Set(item, item)
+	replaced := art.Set(item, nil)
 	if replaced {
 		t.Fatal("expected false")
 	}

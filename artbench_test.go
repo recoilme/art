@@ -8,6 +8,15 @@ import (
 	"github.com/recoilme/art"
 )
 
+func initBin(N int) [][]byte {
+	bytes := make([][]byte, N)
+	for n := 0; n < N; n++ {
+		bytes[n] = make([]byte, 8)
+		binary.BigEndian.PutUint64(bytes[n], uint64(n))
+	}
+	return bytes
+}
+
 func BenchmarkSet(b *testing.B) {
 	strs := make([][]byte, b.N)
 
@@ -45,5 +54,21 @@ func BenchmarkGet(b *testing.B) {
 		if !bytes.Equal(val, strs[n]) {
 			b.Fail()
 		}
+	}
+}
+
+func BenchmarkArt4Get(b *testing.B) {
+	strs := initBin(b.N)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(strs[n], nil)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for n := 0; n < b.N; n++ {
+		_ = tree.Get(strs[n])
+
 	}
 }
