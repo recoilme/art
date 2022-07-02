@@ -18,38 +18,26 @@ func initBin(N int) [][]byte {
 }
 
 func BenchmarkSet(b *testing.B) {
-	strs := make([][]byte, b.N)
-
-	for n := 0; n < b.N; n++ {
-		bin := make([]byte, 8)
-		binary.BigEndian.PutUint64(bin, uint64(n))
-		strs[n] = bin
-	}
+	strs := initBin(b.N)
 
 	b.ResetTimer()
 	b.ReportAllocs()
 	tree := art.New()
-	for n := b.N - 1; n > 0; n-- {
+	for n := 0; n < b.N; n++ {
 		tree.Set(strs[n], nil)
 	}
 }
 
 func BenchmarkGet(b *testing.B) {
-	strs := make([][]byte, b.N)
-
-	for n := 0; n < b.N; n++ {
-		bin := make([]byte, 8)
-		binary.BigEndian.PutUint64(bin, uint64(n))
-		strs[n] = bin
-	}
+	strs := initBin(b.N)
 
 	tree := art.New()
-	for n := b.N - 1; n > 0; n-- {
+	for n := 0; n < b.N; n++ {
 		tree.Set(strs[n], strs[n])
 	}
 	b.ResetTimer()
 	b.ReportAllocs()
-	for n := b.N - 1; n > 0; n-- {
+	for n := 0; n < b.N; n++ {
 		val := tree.Get(strs[n])
 		if !bytes.Equal(val, strs[n]) {
 			b.Fail()
