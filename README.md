@@ -65,7 +65,15 @@ SetHashMap-8        8.00B ± 0%
 GetArt-8            0.00B     
 GetHashMap-8        0.00B     
 GetWordsArt-8       0.00B     
-GetWordsHashMap-8   0.00B 
+GetWordsHashMap-8   0.00B
+
+name               allocs/op
+SetArt-8             1.00 ± 0%
+SetHashMap-8         0.00     
+GetArt-8             0.00     
+GetHashMap-8         0.00     
+GetWordsArt-8        0.00     
+GetWordsHashMap-8    0.00    
 ```
 
 ### Usage
