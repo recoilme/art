@@ -49,6 +49,21 @@ In binary format:
          &{key:[115 111 109 101 46 99 111 109] val:[99] children:[] size:0}
 ```
 
+## Benchmarks (Art vs HashMap)
+
+```
+goos: darwin
+goarch: amd64
+pkg: github.com/recoilme/art
+cpu: Intel(R) Core(TM) i7-8569U CPU @ 2.80GHz
+BenchmarkSet-8                   6677190               163.8 ns/op            90 B/op          1 allocs/op
+BenchmarkGet-8                  33801346                36.84 ns/op            0 B/op          0 allocs/op
+BenchmarkSetHashMap-8            8144628               192.5 ns/op             8 B/op          0 allocs/op
+BenchmarkGetHashMap-8           16218798               105.7 ns/op             0 B/op          0 allocs/op
+BenchmarkGetWords-8             10287565               120.3 ns/op             0 B/op          0 allocs/op
+BenchmarkGetWordsHashMap-8      15609783                84.04 ns/op            0 B/op          0 allocs/op
+```
+
 ## Usage
 
 see tests

@@ -1,8 +1,10 @@
 package art_test
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
+	"os"
 	"testing"
 
 	"github.com/recoilme/art"
@@ -131,4 +133,38 @@ func TestStringKeys(t *testing.T) {
 	tree.Set([]byte("http://some.com"), []byte("c"))
 
 	t.Log(tree.StringKeys(true))
+}
+
+func loadTestFile(path string) [][]byte {
+	file, err := os.Open(path)
+	if err != nil {
+		panic("Couldn't open " + path)
+	}
+	defer file.Close()
+
+	var words [][]byte
+	reader := bufio.NewReader(file)
+	for {
+		if line, err := reader.ReadBytes(byte('\n')); err != nil {
+			break
+		} else {
+			if len(line) > 0 {
+				words = append(words, line[:len(line)-1])
+			}
+		}
+	}
+	return words
+}
+
+func TestWords(t *testing.T) {
+	worlds := loadTestFile("test/words.txt")
+	tree := art.New()
+	for _, w := range worlds {
+		tree.Set(w, w)
+	}
+	for _, w := range worlds {
+		if !bytes.Equal(w, tree.Get(w)) {
+			t.Fail()
+		}
+	}
 }

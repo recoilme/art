@@ -2,7 +2,6 @@ package art
 
 import (
 	"bytes"
-	"math/bits"
 )
 
 type node struct {
@@ -145,8 +144,15 @@ func (n *node) grow() {
 		}
 		newchild := make([]*node, newsize)
 		var i int16
-		for i = 0; i < n.size; i++ {
-			newchild[i] = n.children[i]
+		if newsize == 256 {
+			for i = 0; i < n.size; i++ {
+				idx := n.children[i].key[0]
+				newchild[idx] = n.children[i]
+			}
+		} else {
+			for i = 0; i < n.size; i++ {
+				newchild[i] = n.children[i]
+			}
 		}
 		n.children = newchild
 	}
@@ -155,6 +161,14 @@ func (n *node) grow() {
 func (n *node) add(key, val []byte) {
 	//	fmt.Println("add", key, n.size)
 	n.grow()
+	if len(n.children) == 256 {
+		n.children[key[0]] = &node{
+			key: key,
+			val: val,
+		}
+		n.size += 1
+		return
+	}
 	var idx int16
 	for ; idx < n.size; idx++ {
 		if key[0] < n.children[idx].key[0] {
@@ -175,24 +189,21 @@ func (n *node) add(key, val []byte) {
 }
 
 func (n *node) find(k byte) (index int16) {
-	// TODO 255
 	switch len(n.children) {
-	case -1:
-		// never 16
-		bitfield := uint(0)
-		for i := 0; i < int(n.size); i++ {
-			if n.children[i].key[0] >= k {
-				bitfield |= (1 << i)
+	case 4, 16:
+		var idx int16
+		for ; idx < n.size; idx++ {
+			if k == n.children[idx].key[0] {
+				return idx
 			}
 		}
-		mask := (1 << len(n.children)) - 1
-		bitfield &= uint(mask)
-		if bitfield != 0 {
-			return int16(byte(bits.TrailingZeros(bitfield)))
+		return -1
+	case 256:
+		if n.children[k] != nil {
+			return int16(k)
 		}
 		return -1
 	default:
-
 		var low int16
 		high := n.size - 1
 		for low <= high {
