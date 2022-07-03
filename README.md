@@ -34,11 +34,11 @@ In this example:
 ```
 Tree will looks like:
 ```
-        http://:
-         example.com/tag/:
-          10:a
-          20:b
-         some.com:c
+        key:http:// val:
+         key:example.com/tag/ val:
+          key:10 val:a
+          key:20 val:b
+         key:some.com val:c
 ```
 In binary format:
 ```
@@ -52,16 +52,27 @@ In binary format:
 ## Benchmarks (Art vs HashMap)
 
 ```
-goos: darwin
-goarch: amd64
-pkg: github.com/recoilme/art
-cpu: Intel(R) Core(TM) i7-8569U CPU @ 2.80GHz
-BenchmarkSet-8                   6677190               163.8 ns/op            90 B/op          1 allocs/op
-BenchmarkGet-8                  33801346                36.84 ns/op            0 B/op          0 allocs/op
-BenchmarkSetHashMap-8            8144628               192.5 ns/op             8 B/op          0 allocs/op
-BenchmarkGetHashMap-8           16218798               105.7 ns/op             0 B/op          0 allocs/op
-BenchmarkGetWords-8             10287565               120.3 ns/op             0 B/op          0 allocs/op
-BenchmarkGetWordsHashMap-8      15609783                84.04 ns/op            0 B/op          0 allocs/op
+$ go test -bench=. -benchmem -count=3 -timeout=1m  > x.txt
+$ benchstat x.txt
+```
+Note: in this benchmark keys has many common parts (ints - in bigendian encodings)
+
+```
+name               time/op
+SetArt-8            137ns ±12%
+SetHashMap-8        212ns ±10%
+GetArt-8           36.8ns ± 4%
+GetHashMap-8        115ns ± 2%
+GetWordsArt-8       124ns ± 5%
+GetWordsHashMap-8  89.6ns ± 4%
+
+name               alloc/op
+SetArt-8            90.0B ± 0%
+SetHashMap-8        8.00B ± 0%
+GetArt-8            0.00B     
+GetHashMap-8        0.00B     
+GetWordsArt-8       0.00B     
+GetWordsHashMap-8   0.00B 
 ```
 
 ## Usage

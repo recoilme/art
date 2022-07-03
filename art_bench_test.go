@@ -40,7 +40,7 @@ func forceGC() {
 	time.Sleep(time.Millisecond * 500)
 }
 
-func BenchmarkSet(b *testing.B) {
+func BenchmarkSetArt(b *testing.B) {
 	keys := seed(b.N, 0)
 
 	b.ResetTimer()
@@ -48,21 +48,6 @@ func BenchmarkSet(b *testing.B) {
 	tree := art.New()
 	for n := 0; n < b.N; n++ {
 		tree.Set(keys[n], nil)
-	}
-}
-
-func BenchmarkGet(b *testing.B) {
-	keys := seed(b.N, 0)
-
-	tree := art.New()
-	for n := 0; n < b.N; n++ {
-		tree.Set(keys[n], nil)
-	}
-
-	b.ResetTimer()
-	b.ReportAllocs()
-	for n := 0; n < b.N; n++ {
-		tree.Get(keys[n])
 	}
 }
 
@@ -76,6 +61,21 @@ func BenchmarkSetHashMap(b *testing.B) {
 	b.ReportAllocs()
 	for n := 0; n < b.N; n++ {
 		m[string(keys[n])] = keys[n]
+	}
+}
+
+func BenchmarkGetArt(b *testing.B) {
+	keys := seed(b.N, 0)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(keys[n], nil)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for n := 0; n < b.N; n++ {
+		tree.Get(keys[n])
 	}
 }
 
@@ -97,7 +97,7 @@ func BenchmarkGetHashMap(b *testing.B) {
 	}
 }
 
-func BenchmarkGetWords(b *testing.B) {
+func BenchmarkGetWordsArt(b *testing.B) {
 
 	keys := loadTestFile("test/words.txt")
 	tree := art.New()
