@@ -55,7 +55,9 @@ In binary format:
 $ go test -bench=. -benchmem -count=3 -timeout=1m  > x.txt
 $ benchstat x.txt
 ```
-Note: in this benchmark keys has many common parts (ints - in bigendian encodings && words with common prefixes)
+Note: in this benchmark keys are:
+ - ints - (in bigendian encodings, many common bytes)
+ - words (more realistic)
 
 ```
 name               time/op
