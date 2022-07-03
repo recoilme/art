@@ -18,10 +18,10 @@ Unlike other implementations in Go/C this version store only different parts of 
  - Binary comparator only
 
 
-## Status
+### Status
 WIP
 
-## Storage format
+### Storage format
 In this example:
 ```
 	tree := art.New()
@@ -40,16 +40,7 @@ Tree will looks like:
           key:20 val:b
          key:some.com val:c
 ```
-In binary format:
-```
-        &{key:[104 116 116 112 58 47 47] val:[] children:[0xc00005f1d0 0xc00005f220 <nil> <nil>] size:2}
-         &{key:[101 120 97 109 112 108 101 46 99 111 109 47 116 97 103 47] val:[] children:[0xc00005f130 0xc00005f180 <nil> <nil>] size:2}
-          &{key:[49 48] val:[97] children:[] size:0}
-          &{key:[50 48] val:[98] children:[] size:0}
-         &{key:[115 111 109 101 46 99 111 109] val:[99] children:[] size:0}
-```
-
-## Benchmarks (Art vs HashMap)
+### Benchmarks (Art vs HashMap)
 
 ```
 $ go test -bench=. -benchmem -count=3 -timeout=1m  > x.txt
@@ -77,10 +68,14 @@ GetWordsArt-8       0.00B
 GetWordsHashMap-8   0.00B 
 ```
 
-## Usage
+### Usage
 
 see tests
 
-## Credits
+### Credits
 
  - [The Adaptive Radix Tree: ARTful Indexing for Main-Memory Databases (Specification)](https://db.in.tum.de/~leis/papers/ART.pdf)
+
+### Author
+
+[Kulibaba Vadim](https://github.com/recoilme)
