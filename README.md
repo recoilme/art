@@ -76,6 +76,8 @@ GetWordsArt-8        0.00
 GetWordsHashMap-8    0.00    
 ```
 
+[More benchmarks](https://github.com/recoilme/bench_sortedsets)
+
 ### Usage
 
 see tests
