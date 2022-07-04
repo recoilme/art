@@ -11,53 +11,48 @@ type node struct {
 	size     int16
 }
 
-func (n *node) set(key, val []byte, depth int) (replaced bool) {
-	// leaf node
+func (n *node) set(key, val []byte, depth int) {
+	// node without children
 	if n.size == 0 {
 		if bytes.Equal(key[depth:], n.key) {
 			n.val = val
-			return true
+			return
 		}
 		n.nodeSplit(key[depth:], val)
-		return false
+		return
 	}
 	// nodes with children
 	if bytes.Equal(key[depth:], n.key) {
 		// prefix equal
 		n.val = val
-		return true
+		return
 	}
-	insert := func() (inserted bool) {
+	insert := func() {
 		i := n.find(key[depth])
 		if i >= 0 {
 			n = n.children[i]
 			n.set(key, val, depth)
 			// go to child
-		} else {
-			n.add(key[depth:], val)
+			return
 		}
-		return true
+		n.add(key[depth:], val)
+		return
 	}
 	// node without prefix
 	if len(n.key) == 0 {
-		if insert() {
-			return false
-		}
+		insert()
 	}
 	// node with prefix
 	cp := commonPrefix(key[depth:], n.key)
 	delta := len(n.key) - len(cp)
 	if delta <= 0 {
 		depth += len(cp)
-		if insert() {
-			return false
-		}
+		insert()
 	} else {
 		// rebase tree
 		oldnode := &node{}
 		*oldnode = *n
 		oldnode.key = oldnode.key[len(cp):]
-		//oldnode.Print(0)
 		newnode := &node{
 			key:      cp,
 			val:      nil,
@@ -72,26 +67,24 @@ func (n *node) set(key, val []byte, depth int) (replaced bool) {
 			*n = *newnode
 			n.set(key, val, depth)
 		}
-		return false
+		return
 	}
-	return false
+	return
 }
 
-func (n *node) get(key []byte, depth int) (val []byte) {
+func (n *node) get(key []byte, depth int) []byte {
 	//fmt.Println("get", key, depth, val)
-	// leaf node
+	// node without children
 	if n.size == 0 {
 		if bytes.Equal(key[depth:], n.key) {
-			val = n.val
-			return
+			return n.val
 		}
 		return nil
 	}
 	// nodes with children
 	if bytes.Equal(key[depth:], n.key) {
 		// prefix equal
-		val = n.val
-		return
+		return n.val
 	}
 	// node without prefix
 	if len(n.key) == 0 {
@@ -99,14 +92,12 @@ func (n *node) get(key []byte, depth int) (val []byte) {
 		if i >= 0 {
 			n = n.children[i]
 			if bytes.Equal(key[depth:], n.key) {
-				val = n.val
-				return
+				return n.val
 			}
-			return n.get(key, depth)
 			// go to child
-		} else {
-			return nil
+			return n.get(key, depth)
 		}
+		return nil
 	}
 	// node with prefix
 	cp := commonPrefix(key[depth:], n.key)
@@ -117,17 +108,14 @@ func (n *node) get(key []byte, depth int) (val []byte) {
 		if i >= 0 {
 			n = n.children[i]
 			if bytes.Equal(key[depth:], n.key) {
-				//fmt.Println("eq", key, n.val)
-				val = n.val
-				return
+				return n.val
 			}
-			return n.get(key, depth)
 			// go to child
-		} else {
-			return nil
+			return n.get(key, depth)
 		}
+		return nil
 	}
-	return
+	return nil
 }
 
 func (n *node) grow() {
@@ -228,12 +216,10 @@ func (n *node) nodeSplit(key, val []byte) {
 	// add childs
 	n.children = make([]*node, 4)
 	if bytes.Equal(n.key, cp) {
-		// old key = cp
 		n.add(key[depth:], val)
 		return
 	}
 	if bytes.Equal(key, cp) {
-		// new key = cp
 		oldkey := n.key
 		oldval := n.val
 		n.key = cp

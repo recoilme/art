@@ -13,13 +13,10 @@ import (
 func Test1(t *testing.T) {
 	art := art.New()
 	item := []byte("1")
-	replaced := art.Set(item, nil)
-	if replaced {
-		t.Fatal("expected false")
-	}
-	replaced = art.Set(item, []byte("2"))
-	if !replaced {
-		t.Fatal("expected true")
+	art.Set(item, nil)
+	art.Set(item, []byte("2"))
+	if !bytes.Equal([]byte("2"), art.Get(item)) {
+		t.Fail()
 	}
 }
 
@@ -27,13 +24,13 @@ func Test2(t *testing.T) {
 	art := art.New()
 	item1 := []byte("1")
 	item2 := []byte("2")
-	replaced := art.Set(item2, item2)
-	if replaced {
-		t.Fatal("expected false")
+	art.Set(item2, item2)
+	art.Set(item1, item1)
+	if !bytes.Equal(item1, art.Get(item1)) {
+		t.Fail()
 	}
-	replaced = art.Set(item1, item1)
-	if replaced {
-		t.Fatal("expected false")
+	if !bytes.Equal(item2, art.Get(item2)) {
+		t.Fail()
 	}
 }
 
@@ -42,19 +39,18 @@ func Test3(t *testing.T) {
 	item1 := []byte("api1")
 	item2 := []byte("api2")
 	item3 := []byte("a")
-	replaced := art.Set(item2, item2)
-	if replaced {
-		t.Fatal("expected false")
+	art.Set(item2, item2)
+	art.Set(item1, item1)
+	art.Set(item3, item3)
+	if !bytes.Equal(item1, art.Get(item1)) {
+		t.Fail()
 	}
-	replaced = art.Set(item1, item1)
-	if replaced {
-		t.Fatal("expected false")
+	if !bytes.Equal(item2, art.Get(item2)) {
+		t.Fail()
 	}
-	replaced = art.Set(item3, item3)
-	if replaced {
-		t.Fatal("expected false")
+	if !bytes.Equal(item3, art.Get(item3)) {
+		t.Fail()
 	}
-	//art.Print()
 }
 
 func Test4(t *testing.T) {
@@ -69,10 +65,12 @@ func Test4(t *testing.T) {
 
 	tree := art.New()
 	for n := N - 1; n >= 0; n-- {
-		if n == 0 {
-			tree.Set(strs[n], strs[n])
-		}
 		tree.Set(strs[n], strs[n])
+	}
+	for n := N - 1; n >= 0; n-- {
+		if !bytes.Equal(tree.Get(strs[n]), strs[n]) {
+			t.Fail()
+		}
 	}
 	t.Log(tree.String())
 }
@@ -113,15 +111,15 @@ func TestTreeInsert2AndSearch(t *testing.T) {
 	t.Log(tree.StringKeys(true))
 
 	if res := tree.Get([]byte("yo")); !bytes.Equal(res, earth) {
-		t.Error("unexpected search result")
+		t.Error("unexpected result")
 	}
 
 	if res := tree.Get([]byte("yolo")); !bytes.Equal(res, earth) {
-		t.Error("unexpected search result")
+		t.Error("unexpected result")
 	}
 
 	if res := tree.Get([]byte("yoli")); !bytes.Equal(res, earth) {
-		t.Error("unexpected search result")
+		t.Error("unexpected result")
 	}
 }
 

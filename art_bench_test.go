@@ -102,7 +102,7 @@ func BenchmarkGetWordsArt(b *testing.B) {
 	keys := loadTestFile("test/words.txt")
 	tree := art.New()
 	for _, w := range keys {
-		_ = tree.Set(w, w)
+		tree.Set(w, w)
 	}
 
 	b.ResetTimer()

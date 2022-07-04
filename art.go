@@ -8,7 +8,7 @@ func New() *Art {
 	return &Art{}
 }
 
-func (a *Art) Set(key, val []byte) (replaced bool) {
+func (a *Art) Set(key, val []byte) {
 	//fmt.Println("Set", key)
 	if a.root == nil {
 		a.root = &node{
@@ -17,7 +17,8 @@ func (a *Art) Set(key, val []byte) (replaced bool) {
 		}
 		return
 	}
-	return a.root.set(key, val, 0)
+	a.root.set(key, val, 0)
+	return
 }
 
 func (a *Art) Get(key []byte) (val []byte) {
