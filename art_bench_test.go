@@ -28,7 +28,11 @@ func seed(num int, seed int64) [][]byte {
 		if seed == 0 {
 			binary.BigEndian.PutUint64(bin, uint64(n))
 		} else {
-			binary.BigEndian.PutUint64(bin, rng.Uint64())
+			if seed == 42 {
+				bin = randPrintableKey(rng, 8)
+			} else {
+				binary.BigEndian.PutUint64(bin, rng.Uint64())
+			}
 		}
 		keys[n] = bin
 	}

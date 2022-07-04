@@ -166,3 +166,31 @@ func TestWords(t *testing.T) {
 		}
 	}
 }
+
+func TestRandomInt(t *testing.T) {
+	items := seed(1_000_000, 43)
+	tree := art.New()
+	for _, item := range items {
+		tree.Set(item, item)
+	}
+	for _, item := range items {
+		if !bytes.Equal(item, tree.Get(item)) {
+			t.Fail()
+		}
+	}
+	//t.Log(tree.StringKeys(true))
+}
+
+func TestRandomBin(t *testing.T) {
+	items := seed(1_000_000, 42)
+	tree := art.New()
+	for _, item := range items {
+		tree.Set(item, item)
+	}
+	for _, item := range items {
+		if !bytes.Equal(item, tree.Get(item)) {
+			t.Fail()
+		}
+	}
+	//t.Log(tree.StringKeys(true))
+}
