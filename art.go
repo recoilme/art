@@ -1,5 +1,9 @@
 package art
 
+import (
+	"bytes"
+)
+
 type Art struct {
 	root *node
 }
@@ -41,4 +45,28 @@ func (a *Art) StringKeys(isString bool) string {
 		return ""
 	}
 	return "\n" + a.root.StringKeys(0, isString)
+}
+
+func (a *Art) Delete(key []byte) {
+	if a.root == nil {
+		return
+	}
+	// node without children
+	if a.root.size == 0 && bytes.Equal(key, a.root.key) {
+		a.root = nil
+		return
+	}
+
+	for {
+		key = a.root.delete(key, 0)
+		if key == nil {
+			break
+		}
+	}
+	// set to nil if needed
+	if a.root.val == nil && a.root.size == 0 {
+		a.root = nil
+	}
+
+	return
 }
