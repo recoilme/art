@@ -270,7 +270,7 @@ func (n *node) del(idx int16) {
 
 func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
 
-	if n != nil && n.val != nil && n.key != nil {
+	if n.val != nil {
 		if !iter([]byte(prefix+string(n.key)), n.val) {
 			return false
 		}
