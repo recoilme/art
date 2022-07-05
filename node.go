@@ -68,19 +68,19 @@ func (n *node) set(key, val []byte, depth int) {
 	return
 }
 
-func (n *node) get(key []byte, depth int) []byte {
+func (n *node) get(key []byte, depth int, strict bool) (*node, int) {
 	//fmt.Println("get", key, depth, val)
 	// node without children
 	if n.size == 0 {
-		if bytes.Equal(key[depth:], n.key) {
-			return n.val
+		if compare(key[depth:], n.key, strict) {
+			return n, depth
 		}
-		return nil
+		return nil, depth
 	}
 	// nodes with children
-	if bytes.Equal(key[depth:], n.key) {
+	if compare(key[depth:], n.key, strict) {
 		// prefix equal
-		return n.val
+		return n, depth
 	}
 	// node with or without prefix
 	cp := commonPrefix(key[depth:], n.key)
@@ -90,15 +90,15 @@ func (n *node) get(key []byte, depth int) []byte {
 		i := n.find(key[depth])
 		if i >= 0 {
 			n = n.children[i]
-			if bytes.Equal(key[depth:], n.key) {
-				return n.val
+			if compare(key[depth:], n.key, strict) {
+				return n, depth
 			}
 			// go to child
-			return n.get(key, depth)
+			return n.get(key, depth, strict)
 		}
-		return nil
+		return nil, depth
 	}
-	return nil
+	return nil, depth
 }
 
 func (n *node) grow() {
@@ -286,6 +286,15 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
 		for i := 0; i < int(n.size); i++ {
 			n.children[i].scan(iter, prefix)
 		}
+	}
+	return false
+}
+
+func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
+	n, depth := n.get(pivot, 0, false)
+	pref := string(pivot[:depth])
+	if n != nil {
+		return n.scan(iter, pref)
 	}
 	return false
 }
