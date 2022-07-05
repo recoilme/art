@@ -269,7 +269,7 @@ func TestClean(t *testing.T) {
 
 func TestScan(t *testing.T) {
 	tree := art.New()
-	items := seed(100_000, 1)
+	items := seed(100_000, 42)
 	for _, item := range items {
 		tree.Set(item, item)
 	}
@@ -302,11 +302,11 @@ func TestAscend(t *testing.T) {
 	tree.Set([]byte("haa"), earth)
 	tree.Set([]byte("hab"), earth)
 	//t.Log(tree.StringKeys(true))
-	tree.Ascend([]byte("he"), func(key, val []byte) bool {
-		if !bytes.HasPrefix(key, []byte("he")) {
+	tree.Ascend([]byte("yo"), func(key, val []byte) bool {
+		if !bytes.HasPrefix(key, []byte("yo")) {
 			t.Fatal()
 		}
-		//t.Log(string(key))
+		t.Log(string(key))
 		return true
 	})
 }
