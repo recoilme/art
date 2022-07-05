@@ -268,14 +268,16 @@ func (n *node) del(idx int16) {
 	}
 }
 
-func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
+func (n *node) scan(iter func(key, val []byte) bool, prefix bytes.Buffer) bool {
 
 	if n.val != nil {
-		if !iter([]byte(prefix+string(n.key)), n.val) {
+		prefix.Write(n.key)
+		if !iter(prefix.Bytes(), n.val) {
 			return false
 		}
 	}
-	prefix += string(n.key)
+	prefix.Write(n.key)
+	//prefix += string(n.key)
 	if len(n.children) == 256 {
 		for i := 0; i < len(n.children); i++ {
 			if n.children[i] != nil {
@@ -292,7 +294,8 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
 
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
-	pref := string(pivot[:depth])
+	var pref bytes.Buffer
+	pref.Write(pivot[:depth])
 	if n != nil {
 		return n.scan(iter, pref)
 	}

@@ -78,7 +78,8 @@ func (a *Art) Delete(key []byte) {
 // Scan all items in tree
 func (a *Art) Scan(iter func(key, val []byte) bool) {
 	if a.root != nil {
-		a.root.scan(iter, "")
+		var buf bytes.Buffer
+		a.root.scan(iter, buf)
 	}
 }
 
