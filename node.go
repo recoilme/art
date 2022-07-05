@@ -38,11 +38,7 @@ func (n *node) set(key, val []byte, depth int) {
 		n.add(key[depth:], val)
 		return
 	}
-	// node without prefix
-	if len(n.key) == 0 {
-		insert()
-	}
-	// node with prefix
+
 	cp := commonPrefix(key[depth:], n.key)
 	delta := len(n.key) - len(cp)
 	if delta <= 0 {
@@ -86,20 +82,7 @@ func (n *node) get(key []byte, depth int) []byte {
 		// prefix equal
 		return n.val
 	}
-	// node without prefix
-	if len(n.key) == 0 {
-		i := n.find(key[depth])
-		if i >= 0 {
-			n = n.children[i]
-			if bytes.Equal(key[depth:], n.key) {
-				return n.val
-			}
-			// go to child
-			return n.get(key, depth)
-		}
-		return nil
-	}
-	// node with prefix
+	// node with or without prefix
 	cp := commonPrefix(key[depth:], n.key)
 	delta := len(n.key) - len(cp)
 	if delta <= 0 {
@@ -237,4 +220,50 @@ func (n *node) nodeSplit(key, val []byte) {
 	n.key = cp
 	n.val = nil
 	n.add(key[depth:], val)
+}
+
+func (n *node) delete(key []byte, depth int) []byte {
+	//fmt.Println("delete", key)
+	// nodes with children
+	if bytes.Equal(key[depth:], n.key) {
+		// prefix equal
+		n.val = nil
+		return nil
+	}
+	cp := commonPrefix(key[depth:], n.key)
+	delta := len(n.key) - len(cp)
+	if delta <= 0 {
+		depth += len(cp)
+		i := n.find(key[depth])
+		if i >= 0 {
+			child := n.children[i]
+			if bytes.Equal(key[depth:], child.key) {
+				n.del(i)
+				if n.val == nil && n.size == 0 {
+					// self remove
+					return key[:depth]
+				}
+				return nil
+			}
+			// go to child
+			return child.delete(key, depth)
+		}
+		return nil
+	}
+	return nil
+}
+
+func (n *node) del(idx int16) {
+	//fmt.Println("del", idx)
+	n.children[idx] = nil
+	if len(n.children) != 256 {
+		for i := idx; i < n.size-1; i++ {
+			n.children[i] = n.children[i+1]
+		}
+	}
+
+	n.size--
+	if n.size == 0 {
+		n.children = nil
+	}
 }

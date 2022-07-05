@@ -4,11 +4,41 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"math/rand"
 	"os"
 	"testing"
 
 	"github.com/recoilme/art"
 )
+
+func randPrintableKey(rnd *rand.Rand, n int) []byte {
+	s := make([]byte, n)
+	rnd.Read(s)
+	for i := 0; i < n; i++ {
+		s[i] = 'a' + (s[i] % 26)
+	}
+	return s
+}
+
+func seed(num int, seed int64) [][]byte {
+
+	rng := rand.New(rand.NewSource(seed))
+	keys := make([][]byte, num)
+	for n := 1; n < num; n++ {
+		bin := make([]byte, 8)
+		if seed == 0 {
+			binary.BigEndian.PutUint64(bin, uint64(n))
+		} else {
+			if seed == 42 {
+				bin = randPrintableKey(rng, 8)
+			} else {
+				binary.BigEndian.PutUint64(bin, rng.Uint64())
+			}
+		}
+		keys[n] = bin
+	}
+	return keys
+}
 
 func Test1(t *testing.T) {
 	art := art.New()
@@ -168,7 +198,7 @@ func TestWords(t *testing.T) {
 }
 
 func TestRandomInt(t *testing.T) {
-	items := seed(1_000_000, 43)
+	items := seed(1_000, 43)
 	tree := art.New()
 	for _, item := range items {
 		tree.Set(item, item)
@@ -182,7 +212,7 @@ func TestRandomInt(t *testing.T) {
 }
 
 func TestRandomBin(t *testing.T) {
-	items := seed(1_000_000, 42)
+	items := seed(1_000, 42)
 	tree := art.New()
 	for _, item := range items {
 		tree.Set(item, item)
@@ -193,4 +223,46 @@ func TestRandomBin(t *testing.T) {
 		}
 	}
 	//t.Log(tree.StringKeys(true))
+}
+
+func TestDelete(t *testing.T) {
+	art := art.New()
+	item := []byte("1")
+	item2 := []byte("2")
+	art.Set(item, item)
+	art.Delete(item)
+	if art.Get(item) != nil {
+		t.Fail()
+	}
+	art.Set(item, item)
+	art.Set(item2, item2)
+	art.Delete(item2)
+	if art.Get(item2) != nil {
+		t.Fail()
+	}
+	art.Delete(item)
+	if art.Get(item) != nil {
+		t.Fail()
+	}
+	t.Log(art.String())
+}
+
+func TestClean(t *testing.T) {
+	items := seed(100000, 42)
+	tree := art.New()
+	for _, item := range items {
+		tree.Set(item, item)
+	}
+
+	for _, item := range items {
+		tree.Delete(item)
+	}
+
+	for _, item := range items {
+		if tree.Get(item) != nil {
+			t.Fail()
+		}
+	}
+
+	t.Log(tree.String())
 }

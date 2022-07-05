@@ -11,8 +11,14 @@ func commonPrefix(key, newKey []byte) []byte {
 	limit := min(len(key), len(newKey))
 	for ; i < limit; i++ {
 		if key[i] != newKey[i] {
+			if len(key[:i]) == 0 {
+				return nil
+			}
 			return key[:i]
 		}
+	}
+	if len(key[:i]) == 0 {
+		return nil
 	}
 	return key[:i]
 }
