@@ -286,3 +286,27 @@ func TestScan(t *testing.T) {
 		return true
 	})
 }
+
+func TestAscend(t *testing.T) {
+	tree := art.New()
+
+	earth := []byte("earth")
+
+	tree.Set([]byte("hello"), []byte("world"))
+	tree.Set([]byte("yo"), earth)
+	tree.Set([]byte("yolo"), earth)
+	tree.Set([]byte("yol"), earth)
+	tree.Set([]byte("yoli"), earth)
+	tree.Set([]byte("yopo"), earth)
+	tree.Set([]byte("he"), earth)
+	tree.Set([]byte("haa"), earth)
+	tree.Set([]byte("hab"), earth)
+	//t.Log(tree.StringKeys(true))
+	tree.Ascend([]byte("he"), func(key, val []byte) bool {
+		if !bytes.HasPrefix(key, []byte("he")) {
+			t.Fatal()
+		}
+		//t.Log(string(key))
+		return true
+	})
+}

@@ -30,7 +30,11 @@ func (a *Art) Get(key []byte) (val []byte) {
 	if a.root == nil {
 		return nil
 	}
-	return a.root.get(key, 0)
+	n, _ := a.root.get(key, 0, true)
+	if n == nil {
+		return nil
+	}
+	return n.val
 }
 
 func (a *Art) String() string {
@@ -75,5 +79,12 @@ func (a *Art) Delete(key []byte) {
 func (a *Art) Scan(iter func(key, val []byte) bool) {
 	if a.root != nil {
 		a.root.scan(iter, "")
+	}
+}
+
+// Scan all items in ascend order from >=pivot
+func (a *Art) Ascend(pivot []byte, iter func(key, val []byte) bool) {
+	if a.root != nil {
+		a.root.ascend(pivot, iter)
 	}
 }

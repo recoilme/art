@@ -62,3 +62,10 @@ func (n *node) StringKeys(depth int, isString bool) string {
 	}
 	return buf.String()
 }
+
+func compare(a, b []byte, strict bool) bool {
+	if strict {
+		return bytes.Equal(a, b)
+	}
+	return bytes.Compare(a, b) <= 0
+}
