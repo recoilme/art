@@ -24,7 +24,7 @@ func seed(num int, seed int64) [][]byte {
 
 	rng := rand.New(rand.NewSource(seed))
 	keys := make([][]byte, num)
-	for n := 1; n < num; n++ {
+	for n := 0; n < num; n++ {
 		bin := make([]byte, 8)
 		if seed == 0 {
 			binary.BigEndian.PutUint64(bin, uint64(n))
@@ -265,4 +265,24 @@ func TestClean(t *testing.T) {
 	}
 
 	t.Log(tree.String())
+}
+
+func TestScan(t *testing.T) {
+	tree := art.New()
+	items := seed(100_000, 1)
+	for _, item := range items {
+		tree.Set(item, item)
+	}
+
+	var last []byte
+	tree.Scan(func(key, val []byte) bool {
+		if bytes.Compare(key, last) < 0 {
+			t.Fatal("out of order")
+		}
+		if !bytes.Equal(key, val) {
+			t.Fatal("not equal")
+		}
+		last = key
+		return true
+	})
 }
