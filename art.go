@@ -70,3 +70,10 @@ func (a *Art) Delete(key []byte) {
 
 	return
 }
+
+// Scan all items in tree
+func (a *Art) Scan(iter func(key, val []byte) bool) {
+	if a.root != nil {
+		a.root.scan(iter, "")
+	}
+}

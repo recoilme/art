@@ -267,3 +267,25 @@ func (n *node) del(idx int16) {
 		n.children = nil
 	}
 }
+
+func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
+
+	if n != nil && n.val != nil && n.key != nil {
+		if !iter([]byte(prefix+string(n.key)), n.val) {
+			return false
+		}
+	}
+	prefix += string(n.key)
+	if len(n.children) == 256 {
+		for i := 0; i < len(n.children); i++ {
+			if n.children[i] != nil {
+				n.children[i].scan(iter, prefix)
+			}
+		}
+	} else {
+		for i := 0; i < int(n.size); i++ {
+			n.children[i].scan(iter, prefix)
+		}
+	}
+	return false
+}

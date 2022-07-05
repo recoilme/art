@@ -34,8 +34,17 @@ func (n *node) String(depth int) string {
 	buf := bytes.Buffer{}
 	buf.WriteString(fmt.Sprintf("%s%+v\n", strings.Repeat(" ", depth), n))
 	depth++
-	for idx := 0; idx < int(n.size); idx++ {
-		buf.WriteString(n.children[idx].String(depth))
+
+	if len(n.children) == 256 {
+		for idx := 0; idx < len(n.children); idx++ {
+			if n.children[idx] != nil {
+				buf.WriteString(n.children[idx].String(depth))
+			}
+		}
+	} else {
+		for idx := 0; idx < int(n.size); idx++ {
+			buf.WriteString(n.children[idx].String(depth))
+		}
 	}
 	return buf.String()
 }
