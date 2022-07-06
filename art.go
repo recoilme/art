@@ -88,3 +88,10 @@ func (a *Art) Ascend(pivot []byte, iter func(key, val []byte) bool) {
 		a.root.ascend(pivot, iter)
 	}
 }
+
+// Scan all items in Descend order from <=pivot
+func (a *Art) Descend(pivot []byte, iter func(key, val []byte) bool) {
+	if a.root != nil {
+		a.root.descend(pivot, iter)
+	}
+}

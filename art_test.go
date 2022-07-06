@@ -302,11 +302,59 @@ func TestAscend(t *testing.T) {
 	tree.Set([]byte("haa"), earth)
 	tree.Set([]byte("hab"), earth)
 	//t.Log(tree.StringKeys(true))
+	var last []byte
 	tree.Ascend([]byte("yo"), func(key, val []byte) bool {
 		if !bytes.HasPrefix(key, []byte("yo")) {
 			t.Fatal()
 		}
-		t.Log(string(key))
+		if bytes.Compare(key, last) < 0 {
+			t.Fatal("out of order")
+		}
+		last = key
+		return true
+	})
+}
+
+func TestDescend(t *testing.T) {
+	tree := art.New()
+
+	tree.Set([]byte("hello"), []byte("hello"))
+	tree.Set([]byte("yo"), []byte("yo"))
+	tree.Set([]byte("yolo"), []byte("yolo"))
+	tree.Set([]byte("yol"), []byte("yol"))
+	tree.Set([]byte("yoli"), []byte("yoli"))
+	tree.Set([]byte("yopo"), []byte("yopo"))
+	tree.Set([]byte("he"), []byte("he"))
+	tree.Set([]byte("haa"), []byte("haa"))
+	tree.Set([]byte("hab"), []byte("hab"))
+	//t.Log(tree.StringKeys(true))
+	var last []byte
+	pivot := []byte("h")
+	tree.Descend(pivot, func(key, val []byte) bool {
+		if last == nil {
+			last = key
+		}
+		if !bytes.HasPrefix(key, pivot) {
+			t.Fatal()
+		}
+		if bytes.Compare(key, last) > 0 {
+			t.Fatal("out of order")
+		}
+		//t.Log(string(key), string(val))
+		last = key
+		return true
+	})
+
+	N := 10
+	keys := seed(N, 42)
+
+	tree = art.New()
+	for n := 0; n < N; n++ {
+		tree.Set(keys[n], keys[n])
+	}
+
+	tree.Descend(nil, func(key, val []byte) bool {
+		//fmt.Println(string(key))
 		return true
 	})
 }

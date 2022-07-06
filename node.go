@@ -298,3 +298,45 @@ func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	}
 	return false
 }
+
+func (n *node) descend(pivot []byte, iter func(key, val []byte) bool) bool {
+	n, depth := n.get(pivot, 0, false)
+	pref := string(pivot[:depth])
+	if n != nil {
+		nodes := make([]*node, 0, 8)
+		keys := make([][]byte, 0, 8)
+		n.scanNodes(func(key []byte, nn *node) bool {
+			nodes = append(nodes, nn)
+			keys = append(keys, key)
+			return true
+		}, pref)
+		for i := len(keys) - 1; i >= 0; i-- {
+			if !iter(keys[i], nodes[i].val) {
+				break
+			}
+		}
+	}
+	return false
+}
+
+func (n *node) scanNodes(iter func(key []byte, nn *node) bool, prefix string) bool {
+
+	if n.val != nil {
+		if !iter([]byte(prefix+string(n.key)), n) {
+			return false
+		}
+	}
+	prefix += string(n.key)
+	if len(n.children) == 256 {
+		for i := 0; i < len(n.children); i++ {
+			if n.children[i] != nil {
+				n.children[i].scanNodes(iter, prefix)
+			}
+		}
+	} else {
+		for i := 0; i < int(n.size); i++ {
+			n.children[i].scanNodes(iter, prefix)
+		}
+	}
+	return false
+}
