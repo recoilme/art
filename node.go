@@ -2,6 +2,7 @@ package art
 
 import (
 	"bytes"
+	"fmt"
 )
 
 type node struct {
@@ -269,15 +270,15 @@ func (n *node) del(idx int16) {
 }
 
 func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
-	//fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
+	fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
 
 	if n.val != nil {
 		if n.size == 0 {
-			if !iter(append(prefix[:depth], n.key...), n.val) {
+			if !iter(append(prefix, n.key...), n.val) {
 				return false
 			}
 		}
-		if !iter(prefix[:depth], n.val) {
+		if !iter(prefix, n.val) {
 			return false
 		}
 	}
@@ -292,8 +293,8 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 			continue
 		}
 		if n.children[i].size == 0 {
-			if len(prefix[:depth]) > 0 {
-				if !iter(append(prefix[:depth], n.children[i].key...), n.children[i].val) {
+			if len(prefix) > 0 {
+				if !iter(append(prefix, n.children[i].key...), n.children[i].val) {
 					break
 				}
 				continue
@@ -316,10 +317,10 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
-	pref := string(pivot[:depth])
-	_ = pref
+	_ = depth
+	pref := pivot //[:depth]
 	if n != nil {
-		return n.scan(iter, nil, 0)
+		return n.scan(iter, pref, len(pref)) //len(pref))
 	}
 	return false
 }

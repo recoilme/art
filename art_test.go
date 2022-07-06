@@ -311,13 +311,14 @@ func TestAscend(t *testing.T) {
 	tree.Set([]byte("hab"), earth)
 	//t.Log(tree.StringKeys(true))
 	var last []byte
-	tree.Ascend([]byte("yo"), func(key, val []byte) bool {
+	tree.Ascend([]byte("h"), func(key, val []byte) bool {
 		if !bytes.HasPrefix(key, []byte("yo")) {
-			//t.Fatal()
+			t.Fatal()
 		}
 		if bytes.Compare(key, last) < 0 {
-			//t.Fatal("out of order")
+			t.Fatal("out of order")
 		}
+		t.Log(string(key))
 		last = key
 		return true
 	})
