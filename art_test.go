@@ -285,14 +285,22 @@ func TestScan(t *testing.T) {
 		newitems = append(newitems, []byte(string(key)))
 		return true
 	})
+	if !compare(items, newitems) {
+		t.Fail()
+	}
+}
+
+func compare(items, newitems [][]byte) bool {
 	sort.Slice(items, func(i, j int) bool {
 		return bytes.Compare(items[i], items[j]) <= 0
 	})
 	for i := range items {
 		if !bytes.Equal(items[i], newitems[i]) {
-			t.Fatal("not equal", items[i], newitems[i])
+			return false
+			//t.Fatal("not equal", items[i], newitems[i])
 		}
 	}
+	return true
 }
 
 func TestAscend(t *testing.T) {
@@ -309,19 +317,20 @@ func TestAscend(t *testing.T) {
 	tree.Set([]byte("he"), earth)
 	tree.Set([]byte("haa"), earth)
 	tree.Set([]byte("hab"), earth)
-	//t.Log(tree.StringKeys(true))
-	var last []byte
-	tree.Ascend([]byte("h"), func(key, val []byte) bool {
-		if !bytes.HasPrefix(key, []byte("yo")) {
+	t.Log(tree.StringKeys(true))
+	newitems := make([][]byte, 0)
+	pivot := []byte("yo")
+	tree.Ascend(pivot, func(key, val []byte) bool {
+		if !bytes.HasPrefix(key, pivot) {
 			t.Fatal()
 		}
-		if bytes.Compare(key, last) < 0 {
-			t.Fatal("out of order")
-		}
 		t.Log(string(key))
-		last = key
+		newitems = append(newitems, []byte(string(key)))
 		return true
 	})
+	if !compare(newitems, newitems) {
+		t.Fail()
+	}
 }
 
 func TestDescend(t *testing.T) {

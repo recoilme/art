@@ -2,7 +2,6 @@ package art
 
 import (
 	"bytes"
-	"fmt"
 )
 
 type node struct {
@@ -74,14 +73,14 @@ func (n *node) get(key []byte, depth int, strict bool) (*node, int) {
 	// node without children
 	if n.size == 0 {
 		if compare(key[depth:], n.key, strict) {
-			return n, depth
+			return n, depth + len(n.key)
 		}
-		return nil, depth
+		return nil, 0
 	}
 	// nodes with children
 	if compare(key[depth:], n.key, strict) {
 		// prefix equal
-		return n, depth
+		return n, depth + len(n.key)
 	}
 	// node with or without prefix
 	cp := commonPrefix(key[depth:], n.key)
@@ -92,14 +91,14 @@ func (n *node) get(key []byte, depth int, strict bool) (*node, int) {
 		if i >= 0 {
 			n = n.children[i]
 			if compare(key[depth:], n.key, strict) {
-				return n, depth
+				return n, depth + len(n.key)
 			}
 			// go to child
 			return n.get(key, depth, strict)
 		}
-		return nil, depth
+		return nil, 0
 	}
-	return nil, depth
+	return nil, 0
 }
 
 func (n *node) grow() {
@@ -270,7 +269,7 @@ func (n *node) del(idx int16) {
 }
 
 func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
-	fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
+	//fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
 
 	if n.val != nil {
 		if n.size == 0 {
@@ -317,8 +316,9 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
+	//fmt.Println("ascend", string(pivot), depth, n.key, pivot[:depth])
 	_ = depth
-	pref := pivot //[:depth]
+	pref := pivot[:depth]
 	if n != nil {
 		return n.scan(iter, pref, len(pref)) //len(pref))
 	}
