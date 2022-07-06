@@ -268,24 +268,48 @@ func (n *node) del(idx int16) {
 	}
 }
 
-func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
+func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
+	//fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
 
 	if n.val != nil {
-		if !iter([]byte(prefix+string(n.key)), n.val) {
+		if n.size == 0 {
+			if !iter(append(prefix[:depth], n.key...), n.val) {
+				return false
+			}
+		}
+		if !iter(prefix[:depth], n.val) {
 			return false
 		}
 	}
-	prefix += string(n.key)
+
+	var i int16
+	size := n.size
 	if len(n.children) == 256 {
-		for i := 0; i < len(n.children); i++ {
-			if n.children[i] != nil {
-				n.children[i].scan(iter, prefix)
+		size = 256
+	}
+	for ; i < size; i++ {
+		if size == 256 && n.children[i] == nil {
+			continue
+		}
+		if n.children[i].size == 0 {
+			if len(prefix[:depth]) > 0 {
+				if !iter(append(prefix[:depth], n.children[i].key...), n.children[i].val) {
+					break
+				}
+				continue
 			}
+			if !iter(n.children[i].key, n.children[i].val) {
+				break
+			}
+			continue
 		}
-	} else {
-		for i := 0; i < int(n.size); i++ {
-			n.children[i].scan(iter, prefix)
+		if len(n.children[i].key) > 0 {
+			prefix = append(prefix, n.children[i].key...)
+			depth += len(n.children[i].key)
 		}
+		n.children[i].scan(iter, prefix, depth)
+		depth -= len(n.children[i].key)
+		prefix = prefix[:depth]
 	}
 	return false
 }
@@ -293,8 +317,9 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix string) bool {
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
 	pref := string(pivot[:depth])
+	_ = pref
 	if n != nil {
-		return n.scan(iter, pref)
+		return n.scan(iter, nil, 0)
 	}
 	return false
 }

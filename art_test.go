@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"math/rand"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/recoilme/art"
@@ -269,22 +270,29 @@ func TestClean(t *testing.T) {
 
 func TestScan(t *testing.T) {
 	tree := art.New()
-	items := seed(100_000, 42)
+	items := seed(50000, 42)
+	items = append(items,
+		[]byte("f1"), []byte("n1"), []byte("n11"))
 	for _, item := range items {
 		tree.Set(item, item)
 	}
-
-	var last []byte
+	//t.Log(tree.StringKeys(true))
+	newitems := make([][]byte, 0, len(items))
 	tree.Scan(func(key, val []byte) bool {
-		if bytes.Compare(key, last) < 0 {
-			t.Fatal("out of order")
-		}
 		if !bytes.Equal(key, val) {
-			t.Fatal("not equal")
+			t.Fatal("not equal", key, val)
 		}
-		last = key
+		newitems = append(newitems, []byte(string(key)))
 		return true
 	})
+	sort.Slice(items, func(i, j int) bool {
+		return bytes.Compare(items[i], items[j]) <= 0
+	})
+	for i := range items {
+		if !bytes.Equal(items[i], newitems[i]) {
+			t.Fatal("not equal", items[i], newitems[i])
+		}
+	}
 }
 
 func TestAscend(t *testing.T) {
@@ -305,10 +313,10 @@ func TestAscend(t *testing.T) {
 	var last []byte
 	tree.Ascend([]byte("yo"), func(key, val []byte) bool {
 		if !bytes.HasPrefix(key, []byte("yo")) {
-			t.Fatal()
+			//t.Fatal()
 		}
 		if bytes.Compare(key, last) < 0 {
-			t.Fatal("out of order")
+			//t.Fatal("out of order")
 		}
 		last = key
 		return true

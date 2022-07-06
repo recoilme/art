@@ -95,7 +95,6 @@ func BenchmarkScanArt(b *testing.B) {
 
 	b.ResetTimer()
 	b.ReportAllocs()
-
 	tree.Scan(func(key, val []byte) bool {
 		return true
 	})
