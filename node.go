@@ -73,14 +73,14 @@ func (n *node) get(key []byte, depth int, strict bool) (*node, int) {
 	// node without children
 	if n.size == 0 {
 		if compare(key[depth:], n.key, strict) {
-			return n, depth + len(n.key)
+			return n, depth + len(commonPrefix(key[depth:], n.key))
 		}
 		return nil, 0
 	}
 	// nodes with children
 	if compare(key[depth:], n.key, strict) {
 		// prefix equal
-		return n, depth + len(n.key)
+		return n, depth + len(commonPrefix(key[depth:], n.key))
 	}
 	// node with or without prefix
 	cp := commonPrefix(key[depth:], n.key)
@@ -91,7 +91,7 @@ func (n *node) get(key []byte, depth int, strict bool) (*node, int) {
 		if i >= 0 {
 			n = n.children[i]
 			if compare(key[depth:], n.key, strict) {
-				return n, depth + len(n.key)
+				return n, depth + len(commonPrefix(key[depth:], n.key)) //len(n.key)
 			}
 			// go to child
 			return n.get(key, depth, strict)
@@ -270,7 +270,6 @@ func (n *node) del(idx int16) {
 
 func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
 	//fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
-
 	if n.val != nil {
 		if n.size == 0 {
 			if !iter(append(prefix, n.key...), n.val) {
@@ -316,10 +315,8 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
-	//fmt.Println("ascend", string(pivot), depth, n.key, pivot[:depth])
-	_ = depth
-	pref := pivot[:depth]
 	if n != nil {
+		pref := pivot[:depth]
 		return n.scan(iter, pref, len(pref)) //len(pref))
 	}
 	return false
@@ -327,17 +324,17 @@ func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 
 func (n *node) descend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
-	pref := string(pivot[:depth])
+	pref := pivot[:depth]
 	if n != nil {
-		nodes := make([]*node, 0, 8)
 		keys := make([][]byte, 0, 8)
-		n.scanNodes(func(key []byte, nn *node) bool {
-			nodes = append(nodes, nn)
+		vals := make([][]byte, 0, 8)
+		n.scan(func(key, val []byte) bool {
 			keys = append(keys, key)
+			vals = append(vals, val)
 			return true
-		}, pref)
+		}, pref, len(pref))
 		for i := len(keys) - 1; i >= 0; i-- {
-			if !iter(keys[i], nodes[i].val) {
+			if !iter(keys[i], vals[i]) {
 				break
 			}
 		}
@@ -345,24 +342,66 @@ func (n *node) descend(pivot []byte, iter func(key, val []byte) bool) bool {
 	return false
 }
 
-func (n *node) scanNodes(iter func(key []byte, nn *node) bool, prefix string) bool {
-
+func (n *node) scanNodes(iter func(key []byte, nn *node) bool, prefix []byte, depth int) bool {
 	if n.val != nil {
-		if !iter([]byte(prefix+string(n.key)), n) {
+		if n.size == 0 {
+			if !iter(append(prefix, n.key...), n) {
+				return false
+			}
+		}
+		if !iter(prefix, n) {
 			return false
 		}
 	}
-	prefix += string(n.key)
+
+	var i int16
+	size := n.size
 	if len(n.children) == 256 {
-		for i := 0; i < len(n.children); i++ {
-			if n.children[i] != nil {
+		size = 256
+	}
+	for ; i < size; i++ {
+		if size == 256 && n.children[i] == nil {
+			continue
+		}
+		if n.children[i].size == 0 {
+			if len(prefix) > 0 {
+				if !iter(append(prefix, n.children[i].key...), n.children[i]) {
+					break
+				}
+				continue
+			}
+			if !iter(n.children[i].key, n.children[i]) {
+				break
+			}
+			continue
+		}
+		if len(n.children[i].key) > 0 {
+			prefix = append(prefix, n.children[i].key...)
+			depth += len(n.children[i].key)
+		}
+		n.children[i].scanNodes(iter, prefix, depth)
+		depth -= len(n.children[i].key)
+		prefix = prefix[:depth]
+	}
+	return false
+	/*
+		if n.val != nil {
+			if !iter([]byte(prefix+string(n.key)), n) {
+				return false
+			}
+		}
+		prefix += string(n.key)
+		if len(n.children) == 256 {
+			for i := 0; i < len(n.children); i++ {
+				if n.children[i] != nil {
+					n.children[i].scanNodes(iter, prefix)
+				}
+			}
+		} else {
+			for i := 0; i < int(n.size); i++ {
 				n.children[i].scanNodes(iter, prefix)
 			}
 		}
-	} else {
-		for i := 0; i < int(n.size); i++ {
-			n.children[i].scanNodes(iter, prefix)
-		}
-	}
-	return false
+		return false
+	*/
 }
