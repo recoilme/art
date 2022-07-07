@@ -52,28 +52,37 @@ Note: in this benchmark keys are:
 
 ```
 name               time/op
-SetArt-8            137ns ±12%
-SetHashMap-8        212ns ±10%
-GetArt-8           36.8ns ± 4%
-GetHashMap-8        115ns ± 2%
-GetWordsArt-8       124ns ± 5%
-GetWordsHashMap-8  89.6ns ± 4%
+SetArt-8            115ns ±16%
+SetHashMap-8        277ns ±10%
+GetArt-8           48.5ns ± 1%
+AscendArt-8         182ns ± 8%
+DescendArt-8        401ns ± 3%
+ScanArt-8           176ns ± 4%
+GetHashMap-8        116ns ± 8%
+GetWordsArt-8       155ns ± 7%
+GetWordsHashMap-8   116ns ± 7%
 
 name               alloc/op
 SetArt-8            90.0B ± 0%
 SetHashMap-8        8.00B ± 0%
 GetArt-8            0.00B     
+AscendArt-8         0.00B     
+DescendArt-8         263B ± 2%
+ScanArt-8           0.00B     
 GetHashMap-8        0.00B     
 GetWordsArt-8       0.00B     
-GetWordsHashMap-8   0.00B
+GetWordsHashMap-8   0.00B     
 
 name               allocs/op
 SetArt-8             1.00 ± 0%
-SetHashMap-8         0.00     
+SetHashMap-8         1.00 ± 0%
 GetArt-8             0.00     
+AscendArt-8          0.00     
+DescendArt-8         0.00     
+ScanArt-8            0.00     
 GetHashMap-8         0.00     
 GetWordsArt-8        0.00     
-GetWordsHashMap-8    0.00    
+GetWordsHashMap-8    0.00  
 ```
 
 [More benchmarks](https://github.com/recoilme/bench_sortedsets)
