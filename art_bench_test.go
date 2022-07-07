@@ -10,12 +10,13 @@ import (
 
 func forceGC() {
 	runtime.GC()
-	time.Sleep(time.Millisecond * 500)
+	time.Sleep(time.Millisecond * 100)
 }
 
 func BenchmarkSetArt(b *testing.B) {
 	keys := seed(b.N, 0)
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	tree := art.New()
@@ -30,6 +31,7 @@ func BenchmarkSetHashMap(b *testing.B) {
 	for _, w := range keys {
 		m[string(w)] = w
 	}
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for n := 0; n < b.N; n++ {
@@ -45,6 +47,7 @@ func BenchmarkGetArt(b *testing.B) {
 		tree.Set(keys[n], nil)
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for n := 0; n < b.N; n++ {
@@ -60,6 +63,7 @@ func BenchmarkAscendArt(b *testing.B) {
 		tree.Set(keys[n], keys[n])
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 
@@ -76,6 +80,7 @@ func BenchmarkDescendArt(b *testing.B) {
 		tree.Set(keys[n], keys[n])
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 
@@ -93,6 +98,7 @@ func BenchmarkScanArt(b *testing.B) {
 		tree.Set(keys[n], keys[n])
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	tree.Scan(func(key, val []byte) bool {
@@ -111,6 +117,7 @@ func BenchmarkGetHashMap(b *testing.B) {
 		m[string(keys[n])] = keys[n]
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	for n := 0; n < b.N; n++ {
@@ -126,6 +133,7 @@ func BenchmarkGetWordsArt(b *testing.B) {
 		tree.Set(w, w)
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	i := 0
@@ -147,6 +155,7 @@ func BenchmarkGetWordsHashMap(b *testing.B) {
 		m[string(w)] = w
 	}
 
+	forceGC()
 	b.ResetTimer()
 	b.ReportAllocs()
 	i := 0
