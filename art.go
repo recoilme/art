@@ -78,7 +78,8 @@ func (a *Art) Delete(key []byte) {
 // Scan all items in tree
 func (a *Art) Scan(iter func(key, val []byte) bool) {
 	if a.root != nil {
-		a.root.scan(iter, "")
+		//var buf bytes.Buffer
+		a.root.scan(iter, nil, 0)
 	}
 }
 
@@ -86,5 +87,12 @@ func (a *Art) Scan(iter func(key, val []byte) bool) {
 func (a *Art) Ascend(pivot []byte, iter func(key, val []byte) bool) {
 	if a.root != nil {
 		a.root.ascend(pivot, iter)
+	}
+}
+
+// Scan all items in Descend order from <=pivot
+func (a *Art) Descend(pivot []byte, iter func(key, val []byte) bool) {
+	if a.root != nil {
+		a.root.descend(pivot, iter)
 	}
 }

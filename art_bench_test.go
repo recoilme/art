@@ -52,6 +52,54 @@ func BenchmarkGetArt(b *testing.B) {
 	}
 }
 
+func BenchmarkAscendArt(b *testing.B) {
+	keys := seed(b.N, 42)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(keys[n], keys[n])
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	tree.Ascend(nil, func(key, val []byte) bool {
+		return true
+	})
+}
+
+func BenchmarkDescendArt(b *testing.B) {
+	keys := seed(b.N, 42)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(keys[n], keys[n])
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	tree.Descend(nil, func(key, val []byte) bool {
+		//fmt.Println(string(key))
+		return true
+	})
+}
+
+func BenchmarkScanArt(b *testing.B) {
+	keys := seed(b.N, 42)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(keys[n], keys[n])
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	tree.Scan(func(key, val []byte) bool {
+		return true
+	})
+}
+
 func BenchmarkGetHashMap(b *testing.B) {
 	keys := seed(b.N, 0)
 	m := make(map[string][]byte)
