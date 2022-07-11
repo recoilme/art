@@ -270,6 +270,10 @@ func (n *node) del(idx int16) {
 
 func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
 	//fmt.Println("scan", depth, string(prefix), string(prefix[:depth]), string(n.key))
+	if len(n.key) > 0 {
+		prefix = append(prefix, n.key...)
+		depth += len(n.key)
+	}
 	if n.val != nil {
 		if n.size == 0 {
 			if !iter(append(prefix, n.key...), n.val) {
@@ -302,13 +306,16 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 			}
 			continue
 		}
-		if len(n.children[i].key) > 0 {
-			prefix = append(prefix, n.children[i].key...)
-			depth += len(n.children[i].key)
-		}
 		n.children[i].scan(iter, prefix, depth)
-		depth -= len(n.children[i].key)
-		prefix = prefix[:depth]
+	}
+	if n.key != nil {
+		depth -= len(n.key)
+		if depth < 0 {
+			prefix = []byte{}
+			return false
+		} else {
+			prefix = prefix[:depth]
+		}
 	}
 	return false
 }
@@ -316,6 +323,10 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
 	if n != nil {
+		//pref := append()
+		//cp:= commonPrefix(pivot,append(pivot,n.key...))
+		cs := commonSuffix(pivot[:depth], n.key)
+		depth -= len(cs)
 		pref := pivot[:depth]
 		return n.scan(iter, pref, len(pref)) //len(pref))
 	}

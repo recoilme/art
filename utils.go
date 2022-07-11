@@ -23,6 +23,17 @@ func commonPrefix(key, newKey []byte) []byte {
 	return key[:i]
 }
 
+func commonSuffix(key, newKey []byte) []byte {
+	depth := len(newKey)
+	for depth >= 0 {
+		if bytes.HasSuffix(key, newKey[:depth]) {
+			break
+		}
+		depth--
+	}
+	return newKey[:depth]
+}
+
 func min(a int, b int) int {
 	if a < b {
 		return a

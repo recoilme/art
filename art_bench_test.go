@@ -106,6 +106,23 @@ func BenchmarkScanArt(b *testing.B) {
 	})
 }
 
+func BenchmarkDeleteArt(b *testing.B) {
+	keys := seed(b.N, 42)
+
+	tree := art.New()
+	for n := 0; n < b.N; n++ {
+		tree.Set(keys[n], keys[n])
+	}
+
+	forceGC()
+	b.ResetTimer()
+	b.ReportAllocs()
+	for n := 0; n < b.N; n++ {
+		tree.Delete(keys[n])
+	}
+	//b.Log(tree.StringKeys(true))
+}
+
 func BenchmarkGetHashMap(b *testing.B) {
 	keys := seed(b.N, 0)
 	m := make(map[string][]byte)

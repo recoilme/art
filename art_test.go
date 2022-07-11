@@ -385,3 +385,107 @@ func TestDescend(t *testing.T) {
 		return true
 	})
 }
+
+// https://github.com/plar/go-adaptive-radix-tree/blob/e4cdd437992f3811b732416fd668ba6209db61a8/tree_test.go#L601
+func TestTreeTraversalPrefix(t *testing.T) {
+	dataSet := []struct {
+		keyPrefix string
+		keys      []string
+		expected  []string
+	}{
+		{
+			"",
+			[]string{},
+			[]string{},
+		},
+		{
+			"api",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo", "api"},
+		},
+		{
+			"a",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+		},
+		{
+			"b",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{},
+		},
+		{
+			"api.",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "api.foo"},
+		},
+		{
+			"api.foo.bar",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{"api.foo.bar"},
+		},
+		{
+			"api.end",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{},
+		},
+		{
+			"",
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+			[]string{"api.foo.bar", "api.foo.baz", "api.foe.fum", "abc.123.456", "api.foo", "api"},
+		},
+		{
+			"this:key:has",
+			[]string{
+				"this:key:has:a:long:prefix:3",
+				"this:key:has:a:long:common:prefix:2",
+				"this:key:has:a:long:common:prefix:1",
+			},
+			[]string{
+				"this:key:has:a:long:prefix:3",
+				"this:key:has:a:long:common:prefix:2",
+				"this:key:has:a:long:common:prefix:1",
+			},
+		},
+		{
+			"ele",
+			[]string{"elector", "electibles", "elect", "electible"},
+			[]string{"elector", "electibles", "elect", "electible"},
+		},
+		{
+			"long.api.url.v1",
+			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar", "long.api.url.v2.foo"},
+			[]string{"long.api.url.v1.foo", "long.api.url.v1.bar"},
+		},
+	}
+
+	for _, d := range dataSet {
+		tree := art.New()
+		for _, k := range d.keys {
+			tree.Set([]byte(k), []byte(k))
+
+		}
+
+		actual := []string{}
+		leafFilter := func(key, val []byte) bool {
+
+			actual = append(actual, string(key))
+			return true
+		}
+		tree.Ascend([]byte(d.keyPrefix), leafFilter)
+
+		sort.Strings(d.expected)
+		sort.Strings(actual)
+		//t.Log(d.keyPrefix)
+		for i := range d.expected {
+			if !bytes.Equal([]byte(d.expected[i]), []byte(actual[i])) {
+				t.Error("Bad news:", d.keyPrefix, actual)
+				tree.Ascend([]byte(d.keyPrefix), leafFilter)
+				tree.Scan(func(key, val []byte) bool {
+					t.Log(string(key))
+					return true
+				})
+				t.Fatal(tree.StringKeys(true))
+			}
+		}
+	}
+}
