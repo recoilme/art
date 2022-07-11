@@ -387,7 +387,7 @@ func TestDescend(t *testing.T) {
 }
 
 // https://github.com/plar/go-adaptive-radix-tree/blob/e4cdd437992f3811b732416fd668ba6209db61a8/tree_test.go#L601
-func TestTreeTraversalPrefix(t *testing.T) {
+func TestPrefix(t *testing.T) {
 	dataSet := []struct {
 		keyPrefix string
 		keys      []string
@@ -474,11 +474,10 @@ func TestTreeTraversalPrefix(t *testing.T) {
 		tree.Ascend([]byte(d.keyPrefix), leafFilter)
 
 		sort.Strings(d.expected)
-		sort.Strings(actual)
-		//t.Log(d.keyPrefix)
+
 		for i := range d.expected {
 			if !bytes.Equal([]byte(d.expected[i]), []byte(actual[i])) {
-				t.Error("Bad news:", d.keyPrefix, actual)
+				t.Error("Bad news:", d.keyPrefix, actual, d.expected)
 				tree.Ascend([]byte(d.keyPrefix), leafFilter)
 				tree.Scan(func(key, val []byte) bool {
 					t.Log(string(key))
@@ -487,5 +486,20 @@ func TestTreeTraversalPrefix(t *testing.T) {
 				t.Fatal(tree.StringKeys(true))
 			}
 		}
+
+		sort.Sort(sort.Reverse(sort.StringSlice(d.expected)))
+		actual = []string{}
+		tree.Descend([]byte(d.keyPrefix), leafFilter)
+		for i := range d.expected {
+			if !bytes.Equal([]byte(d.expected[i]), []byte(actual[i])) {
+				t.Error("Bad news:", d.keyPrefix, actual, d.expected)
+				tree.Scan(func(key, val []byte) bool {
+					t.Log(string(key))
+					return true
+				})
+				t.Fatal(tree.StringKeys(true))
+			}
+		}
 	}
+
 }

@@ -275,11 +275,6 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 		depth += len(n.key)
 	}
 	if n.val != nil {
-		if n.size == 0 {
-			if !iter(append(prefix, n.key...), n.val) {
-				return false
-			}
-		}
 		if !iter(prefix, n.val) {
 			return false
 		}
@@ -323,24 +318,27 @@ func (n *node) scan(iter func(key, val []byte) bool, prefix []byte, depth int) b
 func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
 	if n != nil {
-		//pref := append()
-		//cp:= commonPrefix(pivot,append(pivot,n.key...))
 		cs := commonSuffix(pivot[:depth], n.key)
 		depth -= len(cs)
 		pref := pivot[:depth]
-		return n.scan(iter, pref, len(pref)) //len(pref))
+		return n.scan(iter, pref, len(pref))
 	}
 	return false
 }
 
 func (n *node) descend(pivot []byte, iter func(key, val []byte) bool) bool {
 	n, depth := n.get(pivot, 0, false)
-	pref := pivot[:depth]
 	if n != nil {
+		cs := commonSuffix(pivot[:depth], n.key)
+		depth -= len(cs)
+		pref := pivot[:depth]
+
 		keys := make([][]byte, 0, 8)
 		vals := make([][]byte, 0, 8)
 		n.scan(func(key, val []byte) bool {
-			keys = append(keys, key)
+			newkey := make([]byte, len(key))
+			copy(newkey, key)
+			keys = append(keys, newkey)
 			vals = append(vals, val)
 			return true
 		}, pref, len(pref))
