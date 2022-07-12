@@ -327,40 +327,88 @@ func (n *node) ascend(pivot []byte, iter func(key, val []byte) bool) bool {
 }
 
 func (n *node) descend(pivot []byte, iter func(key, val []byte) bool) bool {
+	root := n
 	n, depth := n.get(pivot, 0, false)
 	if n != nil {
 		cs := commonSuffix(pivot[:depth], n.key)
 		depth -= len(cs)
 		pref := pivot[:depth]
-
-		keys := make([][]byte, 0, 8)
-		vals := make([][]byte, 0, 8)
-		n.scan(func(key, val []byte) bool {
-			newkey := make([]byte, len(key))
-			copy(newkey, key)
-			keys = append(keys, newkey)
-			vals = append(vals, val)
+		parents := make([][]byte, 0, 8)
+		n.parents(func(key, val []byte) bool {
+			parents = append(parents, key)
 			return true
 		}, pref, len(pref))
-		for i := len(keys) - 1; i >= 0; i-- {
-			if !iter(keys[i], vals[i]) {
-				break
+
+		for j := len(parents) - 1; j >= 0; j-- {
+			parent := parents[j]
+			n, _ := root.get(parent, 0, false)
+			//fmt.Println(string(parent))
+			var i int16
+			size := n.size
+			if len(n.children) == 256 {
+				size = 256
+			}
+			for i = size - 1; i >= 0; i-- {
+				if size == 256 && n.children[i] == nil {
+					continue
+				}
+				if n.children[i].val != nil {
+					if !iter(append(parent, n.children[i].key...), n.children[i].val) {
+						break
+					}
+				}
+			}
+			/*
+				if n.val != nil && n.size > 0 {
+					depth = len(parent)
+					cs := commonSuffix(parent, n.key)
+					depth -= len(cs)
+					if !iter(append(parent[:depth], n.key...), n.val) {
+						break
+					}
+				}*/
+		}
+		if n.val != nil {
+			if !iter(append(pref, n.key...), n.val) {
+
 			}
 		}
 	}
 	return false
-}
+	/*
+		n, depth := n.get(pivot, 0, false)
+		if n != nil {
+			cs := commonSuffix(pivot[:depth], n.key)
+			depth -= len(cs)
+			pref := pivot[:depth]
 
-func (n *node) scanNodes(iter func(key []byte, nn *node) bool, prefix []byte, depth int) bool {
-	if n.val != nil {
-		if n.size == 0 {
-			if !iter(append(prefix, n.key...), n) {
-				return false
+			keys := make([][]byte, 0, 8)
+			vals := make([][]byte, 0, 8)
+			n.scan(func(key, val []byte) bool {
+				newkey := make([]byte, len(key))
+				copy(newkey, key)
+				keys = append(keys, newkey)
+				vals = append(vals, val)
+				return true
+			}, pref, len(pref))
+			for i := len(keys) - 1; i >= 0; i-- {
+				if !iter(keys[i], vals[i]) {
+					break
+				}
 			}
 		}
-		if !iter(prefix, n) {
-			return false
-		}
+		return false
+	*/
+}
+
+func (n *node) parents(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
+	//fmt.Println("parents", depth, string(prefix), string(prefix[:depth]), string(n.key))
+	if len(n.key) > 0 {
+		prefix = append(prefix, n.key...)
+		depth += len(n.key)
+	}
+	if !iter(prefix, n.val) {
+		return false
 	}
 
 	var i int16
@@ -373,44 +421,18 @@ func (n *node) scanNodes(iter func(key []byte, nn *node) bool, prefix []byte, de
 			continue
 		}
 		if n.children[i].size == 0 {
-			if len(prefix) > 0 {
-				if !iter(append(prefix, n.children[i].key...), n.children[i]) {
-					break
-				}
-				continue
-			}
-			if !iter(n.children[i].key, n.children[i]) {
-				break
-			}
 			continue
 		}
-		if len(n.children[i].key) > 0 {
-			prefix = append(prefix, n.children[i].key...)
-			depth += len(n.children[i].key)
+		n.children[i].parents(iter, prefix, depth)
+	}
+	if n.key != nil {
+		depth -= len(n.key)
+		if depth < 0 {
+			prefix = []byte{}
+			return false
+		} else {
+			prefix = prefix[:depth]
 		}
-		n.children[i].scanNodes(iter, prefix, depth)
-		depth -= len(n.children[i].key)
-		prefix = prefix[:depth]
 	}
 	return false
-	/*
-		if n.val != nil {
-			if !iter([]byte(prefix+string(n.key)), n) {
-				return false
-			}
-		}
-		prefix += string(n.key)
-		if len(n.children) == 256 {
-			for i := 0; i < len(n.children); i++ {
-				if n.children[i] != nil {
-					n.children[i].scanNodes(iter, prefix)
-				}
-			}
-		} else {
-			for i := 0; i < int(n.size); i++ {
-				n.children[i].scanNodes(iter, prefix)
-			}
-		}
-		return false
-	*/
 }
