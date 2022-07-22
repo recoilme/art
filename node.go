@@ -2,6 +2,7 @@ package art
 
 import (
 	"bytes"
+	"fmt"
 )
 
 type node struct {
@@ -407,9 +408,11 @@ func (n *node) parents(iter func(key, val []byte) bool, prefix []byte, depth int
 		prefix = append(prefix, n.key...)
 		depth += len(n.key)
 	}
+	//if n.val != nil {
 	if !iter(prefix, n.val) {
 		return false
 	}
+	//}
 
 	var i int16
 	size := n.size
@@ -434,5 +437,73 @@ func (n *node) parents(iter func(key, val []byte) bool, prefix []byte, depth int
 			prefix = prefix[:depth]
 		}
 	}
+
+	return false
+}
+
+func (n *node) parents2(iter func(key, val []byte) bool, prefix []byte, depth int) bool {
+	fmt.Println("parents2", depth, string(prefix), string(prefix[:depth]), string(n.key))
+	if len(n.key) > 0 {
+		prefix = append(prefix, n.key...)
+		depth += len(n.key)
+	}
+	if n.size > 0 {
+		if !iter(prefix, nil) {
+			return false
+		}
+	} else {
+		if n.val != nil {
+			if !iter(prefix, n.val) {
+				return false
+			}
+		}
+	}
+
+	var i int16
+	size := n.size
+	if len(n.children) == 256 {
+		size = 256
+	}
+	withChildren := false
+	withoutChildren := false
+	for ; i < size; i++ {
+		if size == 256 && n.children[i] == nil {
+			continue
+		}
+		if n.children[i].size == 0 {
+			withoutChildren = true
+		} else {
+			withChildren = true
+		}
+		if withChildren && withoutChildren {
+			break
+		}
+	}
+	for ; i < size; i++ {
+		//fmt.Println("key", string(prefix), string(n.key), i)
+		if size == 256 && n.children[i] == nil {
+			continue
+		}
+		if n.children[i].size == 0 {
+
+			if n.children[i].val != nil && withChildren && withoutChildren {
+				if !iter(append(prefix, n.children[i].key...), []byte("44")) {
+					return false
+				}
+			}
+			continue
+		}
+		n.children[i].parents2(iter, prefix, depth)
+	}
+	if n.key != nil {
+		depth -= len(n.key)
+		if depth < 0 {
+			prefix = []byte{}
+			return false
+		} else {
+			prefix = prefix[:depth]
+		}
+	}
+
 	return false
 }

@@ -493,11 +493,11 @@ func TestPrefix(t *testing.T) {
 		for i := range d.expected {
 			_ = i
 			//if d.keyPrefix == "api" {
-			/*if !bytes.Equal([]byte(d.expected[i]), []byte(actual[i])) {
+			if !bytes.Equal([]byte(d.expected[i]), []byte(actual[i])) {
 				t.Error("Bad news:", d.keyPrefix, actual, d.expected)
 				tree.Descend([]byte(d.keyPrefix), leafFilter)
 				t.Fatal(tree.StringKeys(true))
-			}*/
+			}
 			//}
 		}
 	}
